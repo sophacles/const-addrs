@@ -143,3 +143,76 @@ pub fn sock6(input: TokenStream) -> TokenStream {
         }
     }
 }
+
+#[cfg(feature = "ipnet")]
+use ipnetwork::{IpNetwork, Ipv4Network, Ipv6Network};
+
+#[cfg(feature = "ipnet")]
+fn net4_tokens(net: Ipv4Network) -> proc_macro2::TokenStream {
+    let ip = ip4_tokens(net.ip());
+    let prefix = net.prefix();
+    quote!(ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap()).into()
+}
+
+#[cfg(feature = "ipnet")]
+fn net6_tokens(net: Ipv6Network) -> proc_macro2::TokenStream {
+    let ip = ip6_tokens(net.ip());
+    let prefix = net.prefix();
+    quote!(ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap()).into()
+}
+
+#[cfg(feature = "ipnet")]
+#[proc_macro]
+pub fn net(input: TokenStream) -> TokenStream {
+    let ToAddr { inval } = parse_macro_input!(input as ToAddr);
+
+    match IpNetwork::from_str(inval.value().as_str()) {
+        Ok(sock) => match sock {
+            IpNetwork::V4(net) => {
+                let net_tok = net4_tokens(net);
+                quote!(ipnetwork::IpNetwork::V4(#net_tok)).into()
+            }
+            IpNetwork::V6(net) => {
+                let net_tok = net6_tokens(net);
+                quote!(ipnetwork::IpNetwork::V6(#net_tok)).into()
+            }
+        },
+        Err(e) => {
+            inval.span().unwrap().error(format!("{}", e)).emit();
+            let net_tok = net4_tokens(Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
+            quote_spanned!(inval.span() => ipnetwork::IpNetwork::V4(#net_tok)).into()
+        }
+    }
+}
+
+#[cfg(feature = "ipnet")]
+#[proc_macro]
+pub fn net4(input: TokenStream) -> TokenStream {
+    let ToAddr { inval } = parse_macro_input!(input as ToAddr);
+
+    match Ipv4Network::from_str(inval.value().as_str()) {
+        Ok(net) => net4_tokens(net).into(),
+        Err(e) => {
+            inval.span().unwrap().error(format!("{}", e)).emit();
+            let net_tok =
+                net4_tokens(ipnetwork::Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
+            quote_spanned!(inval.span() => #net_tok).into()
+        }
+    }
+}
+
+#[cfg(feature = "ipnet")]
+#[proc_macro]
+pub fn net6(input: TokenStream) -> TokenStream {
+    let ToAddr { inval } = parse_macro_input!(input as ToAddr);
+
+    match Ipv6Network::from_str(inval.value().as_str()) {
+        Ok(net) => net6_tokens(net).into(),
+        Err(e) => {
+            inval.span().unwrap().error(format!("{}", e)).emit();
+            let net_tok =
+                net6_tokens(ipnetwork::Ipv6Network::new(Ipv6Addr::UNSPECIFIED, 0).unwrap());
+            quote_spanned!(inval.span() => #net_tok).into()
+        }
+    }
+}

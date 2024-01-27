@@ -6,9 +6,12 @@ edition = "2021"
 [lib]
 proc-macro = true
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["ipnet"]
+ipnet = ["ipnetwork"]
 
 [dependencies]
+ipnetwork = { version = "0.20.0", optional = true }
 proc-macro2 = "1"
 quote = "1.0"
 syn = "2.0"
