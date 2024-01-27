@@ -20,13 +20,21 @@ impl Parse for ToAddr {
     }
 }
 
-fn ip4_tokens(addr: Ipv4Addr) -> proc_macro2::TokenStream {
+macro_rules! error {
+    ($inval:ident, $e:ident) => {
+        $inval.span().unwrap().error(format!("{}", $e)).emit();
+    };
+}
+
+fn ip4_tokens(addr: Option<Ipv4Addr>) -> proc_macro2::TokenStream {
+    let addr = addr.unwrap_or(Ipv4Addr::UNSPECIFIED);
     let [a, b, c, d] = addr.octets();
 
     quote! { ::std::net::Ipv4Addr::new(#a, #b, #c, #d) }
 }
 
-fn ip6_tokens(addr: Ipv6Addr) -> proc_macro2::TokenStream {
+fn ip6_tokens(addr: Option<Ipv6Addr>) -> proc_macro2::TokenStream {
+    let addr = addr.unwrap_or(Ipv6Addr::UNSPECIFIED);
     let [a, b, c, d, e, f, g, h] = addr.segments();
 
     quote! { ::std::net::Ipv6Addr::new(#a, #b, #c, #d, #e, #f, #g, #h) }
@@ -37,10 +45,11 @@ pub fn ip4(input: TokenStream) -> TokenStream {
     let ToAddr { inval } = parse_macro_input!(input as ToAddr);
 
     match Ipv4Addr::from_str(inval.value().as_str()) {
-        Ok(ip) => ip4_tokens(ip).into(),
+        Ok(ip) => ip4_tokens(Some(ip)).into(),
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            quote_spanned!(inval.span() => ::std::net::Ipv4Addr::UNSPECIFIED).into()
+            error!(inval, e);
+            let ip_tok = ip4_tokens(None);
+            quote_spanned!(inval.span() => #ip_tok).into()
         }
     }
 }
@@ -50,10 +59,11 @@ pub fn ip6(input: TokenStream) -> TokenStream {
     let ToAddr { inval } = parse_macro_input!(input as ToAddr);
 
     match Ipv6Addr::from_str(inval.value().as_str()) {
-        Ok(ip) => ip6_tokens(ip).into(),
+        Ok(ip) => ip6_tokens(Some(ip)).into(),
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            quote_spanned!(inval.span() => ::std::net::Ipv6Addr::UNSPECIFIED).into()
+            error!(inval, e);
+            let ip_tok = ip6_tokens(None);
+            quote_spanned!(inval.span() => #ip_tok).into()
         }
     }
 }
@@ -65,32 +75,34 @@ pub fn ip(input: TokenStream) -> TokenStream {
     match IpAddr::from_str(inval.value().as_str()) {
         Ok(addr) => match addr {
             IpAddr::V4(ip) => {
-                let inner = ip4_tokens(ip);
+                let inner = ip4_tokens(Some(ip));
                 quote!(::std::net::IpAddr::V4(#inner)).into()
             }
             IpAddr::V6(ip) => {
-                let inner = ip6_tokens(ip);
+                let inner = ip6_tokens(Some(ip));
                 quote!(::std::net::IpAddr::V6(#inner)).into()
             }
         },
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            let ip_tok = ip4_tokens(Ipv4Addr::UNSPECIFIED);
+            error!(inval, e);
+            let ip_tok = ip4_tokens(None);
             quote_spanned!(inval.span() => ::std::net::IpAddr::V4(#ip_tok)).into()
         }
     }
 }
 
-fn sock4_tokens(addr: SocketAddrV4) -> proc_macro2::TokenStream {
-    let ip = ip4_tokens(*addr.ip());
+fn sock4_tokens(addr: Option<SocketAddrV4>) -> proc_macro2::TokenStream {
+    let addr = addr.unwrap_or(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0));
+    let ip = ip4_tokens(Some(*addr.ip()));
     let port = addr.port();
-    quote!(::std::net::SocketAddrV4::new(#ip, #port)).into()
+    quote!(::std::net::SocketAddrV4::new(#ip, #port))
 }
 
-fn sock6_tokens(addr: SocketAddrV6) -> proc_macro2::TokenStream {
-    let ip = ip6_tokens(*addr.ip());
+fn sock6_tokens(addr: Option<SocketAddrV6>) -> proc_macro2::TokenStream {
+    let addr = addr.unwrap_or(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0));
+    let ip = ip6_tokens(Some(*addr.ip()));
     let port = addr.port();
-    quote!(::std::net::SocketAddrV6::new(#ip, #port, 0, 0)).into()
+    quote!(::std::net::SocketAddrV6::new(#ip, #port, 0, 0))
 }
 
 #[proc_macro]
@@ -100,18 +112,18 @@ pub fn sock(input: TokenStream) -> TokenStream {
     match SocketAddr::from_str(inval.value().as_str()) {
         Ok(sock) => match sock {
             SocketAddr::V4(sock) => {
-                let sock_tok = sock4_tokens(sock);
+                let sock_tok = sock4_tokens(Some(sock));
                 quote!(::std::net::SocketAddr::V4(#sock_tok)).into()
             }
             SocketAddr::V6(sock) => {
-                let sock_tok = sock6_tokens(sock);
+                let sock_tok = sock6_tokens(Some(sock));
                 quote!(::std::net::SocketAddr::V6(#sock_tok)).into()
             }
         },
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            let sock_tok = sock4_tokens(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0));
-            quote_spanned!(inval.span() => ::std::net::SocketAddr::V4(sock_tock)).into()
+            error!(inval, e);
+            let sock_tok = sock4_tokens(None);
+            quote_spanned!(inval.span() => ::std::net::SocketAddr::V4(#sock_tok)).into()
         }
     }
 }
@@ -121,10 +133,10 @@ pub fn sock4(input: TokenStream) -> TokenStream {
     let ToAddr { inval } = parse_macro_input!(input as ToAddr);
 
     match SocketAddrV4::from_str(inval.value().as_str()) {
-        Ok(sock) => sock4_tokens(sock).into(),
+        Ok(sock) => sock4_tokens(Some(sock)).into(),
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            let sock_tok = sock4_tokens(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0));
+            error!(inval, e);
+            let sock_tok = sock4_tokens(None);
             quote_spanned!(inval.span() => #sock_tok).into()
         }
     }
@@ -135,10 +147,10 @@ pub fn sock6(input: TokenStream) -> TokenStream {
     let ToAddr { inval } = parse_macro_input!(input as ToAddr);
 
     match SocketAddrV6::from_str(inval.value().as_str()) {
-        Ok(sock) => sock6_tokens(sock).into(),
+        Ok(sock) => sock6_tokens(Some(sock)).into(),
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            let sock_tok = sock6_tokens(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0));
+            error!(inval, e);
+            let sock_tok = sock6_tokens(None);
             quote_spanned!(inval.span() => #sock_tok).into()
         }
     }
@@ -148,17 +160,19 @@ pub fn sock6(input: TokenStream) -> TokenStream {
 use ipnetwork::{IpNetwork, Ipv4Network, Ipv6Network};
 
 #[cfg(feature = "ipnet")]
-fn net4_tokens(net: Ipv4Network) -> proc_macro2::TokenStream {
-    let ip = ip4_tokens(net.ip());
+fn net4_tokens(net: Option<Ipv4Network>) -> proc_macro2::TokenStream {
+    let net = net.unwrap_or(Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
+    let ip = ip4_tokens(Some(net.ip()));
     let prefix = net.prefix();
-    quote!(ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap()).into()
+    quote!(ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap())
 }
 
 #[cfg(feature = "ipnet")]
-fn net6_tokens(net: Ipv6Network) -> proc_macro2::TokenStream {
-    let ip = ip6_tokens(net.ip());
+fn net6_tokens(net: Option<Ipv6Network>) -> proc_macro2::TokenStream {
+    let net = net.unwrap_or(Ipv6Network::new(Ipv6Addr::UNSPECIFIED, 0).unwrap());
+    let ip = ip6_tokens(Some(net.ip()));
     let prefix = net.prefix();
-    quote!(ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap()).into()
+    quote!(ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap())
 }
 
 #[cfg(feature = "ipnet")]
@@ -169,17 +183,17 @@ pub fn net(input: TokenStream) -> TokenStream {
     match IpNetwork::from_str(inval.value().as_str()) {
         Ok(sock) => match sock {
             IpNetwork::V4(net) => {
-                let net_tok = net4_tokens(net);
+                let net_tok = net4_tokens(Some(net));
                 quote!(ipnetwork::IpNetwork::V4(#net_tok)).into()
             }
             IpNetwork::V6(net) => {
-                let net_tok = net6_tokens(net);
+                let net_tok = net6_tokens(Some(net));
                 quote!(ipnetwork::IpNetwork::V6(#net_tok)).into()
             }
         },
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            let net_tok = net4_tokens(Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
+            error!(inval, e);
+            let net_tok = net4_tokens(None);
             quote_spanned!(inval.span() => ipnetwork::IpNetwork::V4(#net_tok)).into()
         }
     }
@@ -191,11 +205,10 @@ pub fn net4(input: TokenStream) -> TokenStream {
     let ToAddr { inval } = parse_macro_input!(input as ToAddr);
 
     match Ipv4Network::from_str(inval.value().as_str()) {
-        Ok(net) => net4_tokens(net).into(),
+        Ok(net) => net4_tokens(Some(net)).into(),
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            let net_tok =
-                net4_tokens(ipnetwork::Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
+            error!(inval, e);
+            let net_tok = net4_tokens(None);
             quote_spanned!(inval.span() => #net_tok).into()
         }
     }
@@ -207,11 +220,10 @@ pub fn net6(input: TokenStream) -> TokenStream {
     let ToAddr { inval } = parse_macro_input!(input as ToAddr);
 
     match Ipv6Network::from_str(inval.value().as_str()) {
-        Ok(net) => net6_tokens(net).into(),
+        Ok(net) => net6_tokens(Some(net)).into(),
         Err(e) => {
-            inval.span().unwrap().error(format!("{}", e)).emit();
-            let net_tok =
-                net6_tokens(ipnetwork::Ipv6Network::new(Ipv6Addr::UNSPECIFIED, 0).unwrap());
+            error!(inval, e);
+            let net_tok = net6_tokens(None);
             quote_spanned!(inval.span() => #net_tok).into()
         }
     }
