@@ -29,7 +29,7 @@ There are macros for:
 | `std::net::Ipv6Addr`     | `ip6!`     |
 | `std::net::SocketAddr`   | `sock!`    |
 | `std::net::SocketAddrV4` | `sock4!`   |
-| `std::net::SocketAddrV6` | `sock6!!`  |
+| `std::net::SocketAddrV6` | `sock6!`  |
 | `ipnetwork::IpNetwork`   | `net!`     |
 | `ipnetwork::Ipv4Network` | `net4!`    |
 | `ipnetwork::Ipv6Network` | `net6!`    |
