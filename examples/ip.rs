@@ -1,5 +1,5 @@
-use ipnetwork::{IpNetwork, Ipv4Network, Ipv6Network};
-use net_macros::{ip, ip4, ip6, net, net4, net6, sock, sock4, sock6};
+use ipnetwork::{IpNetwork, Ipv4Network};
+use net_macros::{ip, ip4, ip6, net, net4, sock, sock4, sock6};
 use std::net::IpAddr;
 
 fn test(ip: std::net::IpAddr) {
@@ -47,4 +47,9 @@ fn main() {
     println!("it: {:?} - {}", it, it);
     assert!(matches!(it, IpNetwork::V4(_)));
     assert_eq!(it.prefix(), 24);
+
+    let it = net4!("192.168.1.1/24");
+    println!("it: {:?} - {}", it, it);
+    assert_eq!(it.prefix(), 24);
+    assert_eq!(it, Ipv4Network::new(ip4!("192.168.1.1"), 24).unwrap());
 }

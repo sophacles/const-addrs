@@ -12,6 +12,7 @@ ipnet = ["ipnetwork"]
 
 [dependencies]
 ipnetwork = { version = "0.20.0", optional = true }
+proc-macro-error = "1.0"
 proc-macro2 = "1"
 quote = "1.0"
 syn = "2.0"
