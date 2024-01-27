@@ -25,14 +25,17 @@ There are macros for:
 | Type                     | macro      |
 | ------------------------ | ---------- |
 | `std::net::IpAddr`       | `ip!`      |
-| `std:Ipv4Addr`           | `ip4!`     |
-| `std:Ipv6Addr`           | `ip6!`     |
-| `std:SocketAddr`         | `sock!`    |
-| `std:SocketAddrV4`       | `sock4!`   |
-| `std:SocketAddrV6`       | `sock6!!`  |
+| `std::net::Ipv4Addr`     | `ip4!`     |
+| `std::net::Ipv6Addr`     | `ip6!`     |
+| `std::net::SocketAddr`   | `sock!`    |
+| `std::net::SocketAddrV4` | `sock4!`   |
+| `std::net::SocketAddrV6` | `sock6!!`  |
 | `ipnetwork::IpNetwork`   | `net!`     |
 | `ipnetwork::Ipv4Network` | `net4!`    |
 | `ipnetwork::Ipv6Network` | `net6!`    |
+
+Each of the macros will parse using the `FromStr` implementation for 
+the type, refer to the type documentaton for format details.
 
 Note: using `ipnetwork::*` types requires you to have the 
 [ipnetwork crate](https://crates.io/crates/ipnetwork) in your depdencies. These
