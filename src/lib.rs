@@ -178,6 +178,56 @@ cfg_if::cfg_if! {
     }
 }
 
+cfg_if::cfg_if! {
+    if #[cfg(feature = "mac")] {
+        use macaddr::{MacAddr,MacAddr6,MacAddr8};
+
+        fn mac6_tokens(addr: Option<MacAddr6>) -> proc_macro2::TokenStream {
+            let addr = addr.unwrap_or(MacAddr6::from([0x00; 6]));
+            let [a, b, c, d, e, f] = addr.into_array();
+            quote! { macaddr::MacAddr6::new(#a, #b, #c, #d, #e, #f) }
+        }
+
+        fn mac8_tokens(addr: Option<MacAddr8>) -> proc_macro2::TokenStream {
+            let addr = addr.unwrap_or(MacAddr8::from([0x00; 8]));
+            let [a, b, c, d, e, f, g, h] = addr.into_array();
+            quote! { macaddr::MacAddr8::new(#a, #b, #c, #d, #e, #f, #g, #h) }
+        }
+
+        fn mac_tokens(net: Option<MacAddr>) -> proc_macro2::TokenStream {
+            let net = net.unwrap_or(MacAddr::V6(MacAddr6::from([0x00; 6])));
+            match net {
+                MacAddr::V6(net) => {
+                    let net_tok = mac6_tokens(Some(net));
+                    quote! { macaddr::IpNetwork::V4(#net_tok) }
+                }
+                MacAddr::V8(net) => {
+                    let net_tok = mac8_tokens(Some(net));
+                    quote! { macaddr::MacAddr::V8(#net_tok) }
+                }
+            }
+        }
+
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn mac(input: TokenStream) -> TokenStream {
+            parse_type!(input, mac_tokens, MacAddr)
+        }
+
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn mac6(input: TokenStream) -> TokenStream {
+            parse_type!(input, mac6_tokens, MacAddr6)
+        }
+
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn mac8(input: TokenStream) -> TokenStream {
+            parse_type!(input, mac8_tokens, MacAddr8)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
