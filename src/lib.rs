@@ -124,59 +124,56 @@ pub fn sock6(input: TokenStream) -> TokenStream {
     parse_type!(input, sock6_tokens, SocketAddrV6)
 }
 
-#[cfg(feature = "ipnet")]
-use ipnetwork::{IpNetwork, Ipv4Network, Ipv6Network};
+cfg_if::cfg_if! {
+    if #[cfg(feature = "ipnet")] {
+        use ipnetwork::{IpNetwork, Ipv4Network, Ipv6Network};
 
-#[cfg(feature = "ipnet")]
-fn net4_tokens(net: Option<Ipv4Network>) -> proc_macro2::TokenStream {
-    let net = net.unwrap_or(Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
-    let ip = ip4_tokens(Some(net.ip()));
-    let prefix = net.prefix();
-    quote! { ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap() }
-}
-
-#[cfg(feature = "ipnet")]
-fn net6_tokens(net: Option<Ipv6Network>) -> proc_macro2::TokenStream {
-    let net = net.unwrap_or(Ipv6Network::new(Ipv6Addr::UNSPECIFIED, 0).unwrap());
-    let ip = ip6_tokens(Some(net.ip()));
-    let prefix = net.prefix();
-    quote! { ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap() }
-}
-
-#[cfg(feature = "ipnet")]
-fn net_tokens(net: Option<IpNetwork>) -> proc_macro2::TokenStream {
-    let net = net.unwrap_or(IpNetwork::V4(
-        Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap(),
-    ));
-    match net {
-        IpNetwork::V4(net) => {
-            let net_tok = net4_tokens(Some(net));
-            quote! { ipnetwork::IpNetwork::V4(#net_tok) }
+        fn net4_tokens(net: Option<Ipv4Network>) -> proc_macro2::TokenStream {
+            let net = net.unwrap_or(Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
+            let ip = ip4_tokens(Some(net.ip()));
+            let prefix = net.prefix();
+            quote! { ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap() }
         }
-        IpNetwork::V6(net) => {
-            let net_tok = net6_tokens(Some(net));
-            quote! { ipnetwork::IpNetwork::V6(#net_tok) }
+
+        fn net6_tokens(net: Option<Ipv6Network>) -> proc_macro2::TokenStream {
+            let net = net.unwrap_or(Ipv6Network::new(Ipv6Addr::UNSPECIFIED, 0).unwrap());
+            let ip = ip6_tokens(Some(net.ip()));
+            let prefix = net.prefix();
+            quote! { ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap() }
+        }
+
+        fn net_tokens(net: Option<IpNetwork>) -> proc_macro2::TokenStream {
+            let net = net.unwrap_or(IpNetwork::V4(
+                Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap(),
+            ));
+            match net {
+                IpNetwork::V4(net) => {
+                    let net_tok = net4_tokens(Some(net));
+                    quote! { ipnetwork::IpNetwork::V4(#net_tok) }
+                }
+                IpNetwork::V6(net) => {
+                    let net_tok = net6_tokens(Some(net));
+                    quote! { ipnetwork::IpNetwork::V6(#net_tok) }
+                }
+            }
+        }
+
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn net(input: TokenStream) -> TokenStream {
+            parse_type!(input, net_tokens, IpNetwork)
+        }
+
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn net4(input: TokenStream) -> TokenStream {
+            parse_type!(input, net4_tokens, Ipv4Network)
+        }
+
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn net6(input: TokenStream) -> TokenStream {
+            parse_type!(input, net6_tokens, Ipv6Network)
         }
     }
-}
-
-#[cfg(feature = "ipnet")]
-#[proc_macro]
-#[proc_macro_error]
-pub fn net(input: TokenStream) -> TokenStream {
-    parse_type!(input, net_tokens, IpNetwork)
-}
-
-#[cfg(feature = "ipnet")]
-#[proc_macro]
-#[proc_macro_error]
-pub fn net4(input: TokenStream) -> TokenStream {
-    parse_type!(input, net4_tokens, Ipv4Network)
-}
-
-#[cfg(feature = "ipnet")]
-#[proc_macro]
-#[proc_macro_error]
-pub fn net6(input: TokenStream) -> TokenStream {
-    parse_type!(input, net6_tokens, Ipv6Network)
 }
