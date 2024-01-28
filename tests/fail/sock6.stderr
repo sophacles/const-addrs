@@ -1,0 +1,5 @@
+error: invalid IPv6 socket address syntax
+ --> tests/fail/sock6.rs:4:20
+  |
+4 |     let a = sock6!("2001:db8::32::23:22");
+  |                    ^^^^^^^^^^^^^^^^^^^^^

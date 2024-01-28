@@ -1,0 +1,5 @@
+error: invalid address: 2001:db8::32::23
+ --> tests/fail/net6.rs:4:19
+  |
+4 |     let a = net6!("2001:db8::32::23/129");
+  |                   ^^^^^^^^^^^^^^^^^^^^^^

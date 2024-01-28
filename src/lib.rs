@@ -177,3 +177,35 @@ cfg_if::cfg_if! {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn compilation() {
+        let t = trybuild::TestCases::new();
+        t.compile_fail("tests/fail/ip.rs");
+        t.compile_fail("tests/fail/ip4.rs");
+        t.compile_fail("tests/fail/ip6.rs");
+        t.compile_fail("tests/fail/sock.rs");
+        t.compile_fail("tests/fail/sock4.rs");
+        t.compile_fail("tests/fail/sock6.rs");
+        t.compile_fail("tests/fail/net.rs");
+        t.compile_fail("tests/fail/net4.rs");
+        t.compile_fail("tests/fail/net6.rs");
+
+        t.pass("tests/pass/ip.rs");
+        t.pass("tests/pass/ip4.rs");
+        t.pass("tests/pass/ip6.rs");
+        t.pass("tests/pass/sock.rs");
+        t.pass("tests/pass/sock4.rs");
+        t.pass("tests/pass/sock6.rs");
+
+        // These are disabled because:
+        // 1. they need to be fleshed out
+        // 2. I can't do that until I understand why ipnetwork is unavailable
+        //    when these tests are compiled
+        //t.pass("tests/pass/net.rs");
+        //t.pass("tests/pass/net4.rs");
+        //t.pass("tests/pass/net6.rs");
+    }
+}

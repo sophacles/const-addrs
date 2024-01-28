@@ -1,0 +1,11 @@
+error: invalid IP address syntax
+ --> tests/fail/ip.rs:4:17
+  |
+4 |     let a = ip!("192.168.11");
+  |                 ^^^^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail/ip.rs:5:17
+  |
+5 |     let b = ip!("2001:db8::32::23");
+  |                 ^^^^^^^^^^^^^^^^^^

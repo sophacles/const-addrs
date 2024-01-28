@@ -1,0 +1,5 @@
+error: invalid prefix
+ --> tests/fail/net4.rs:4:19
+  |
+4 |     let a = net4!("192.168.1.1/300");
+  |                   ^^^^^^^^^^^^^^^^^
