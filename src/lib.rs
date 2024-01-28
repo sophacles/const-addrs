@@ -249,13 +249,8 @@ mod tests {
         t.pass("tests/pass/sock.rs");
         t.pass("tests/pass/sock4.rs");
         t.pass("tests/pass/sock6.rs");
-
-        // These are disabled because:
-        // 1. they need to be fleshed out
-        // 2. I can't do that until I understand why ipnetwork is unavailable
-        //    when these tests are compiled
-        //t.pass("tests/pass/net.rs");
-        //t.pass("tests/pass/net4.rs");
-        //t.pass("tests/pass/net6.rs");
+        t.pass("tests/pass/net.rs");
+        t.pass("tests/pass/net4.rs");
+        t.pass("tests/pass/net6.rs");
     }
 }
