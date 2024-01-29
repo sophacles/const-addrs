@@ -7,31 +7,35 @@ use proc_macro_error::{abort_call_site, emit_error, proc_macro_error};
 use quote::quote;
 use syn::{parse, LitStr};
 
-macro_rules! parse_type {
-    ($input:ident, $fn:ident, $ty:ty) => {{
-        let inval = match parse::<LitStr>($input) {
-            Ok(ls) => ls,
-            Err(e) => {
-                abort_call_site!(
-                    e.to_string();
-                    help = "Use the string literal for this type's FromStr impl";
-                );
-            }
-        };
+macro_rules! make_macro {
+    ($macro_name:ident, $ty:ty, $fn:ident) => {
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn $macro_name(input: TokenStream) -> TokenStream {
+            let inval = match parse::<LitStr>(input) {
+                Ok(ls) => ls,
+                Err(e) => {
+                    abort_call_site!(
+                        e.to_string();
+                        help = "Use the string literal for this type's FromStr impl";
+                    );
+                }
+            };
 
-        // try to parse type
-        match <$ty>::from_str(inval.value().as_str()) {
-            // if good, turn it into the right token stream
-            Ok(v) => $fn(Some(v)).into(),
-            Err(e) => {
-                // otherwise emit the parse error with the parser's error message
-                // as well as make the compile error show the invalid string
-                emit_error!(inval, e);
-                // return dummy value of the right type to squash subsequent errors
-                $fn(None).into()
+            // try to parse type
+            match <$ty>::from_str(inval.value().as_str()) {
+                // if good, turn it into the right token stream
+                Ok(v) => $fn(Some(v)).into(),
+                Err(e) => {
+                    // otherwise emit the parse error with the parser's error message
+                    // as well as make the compile error show the invalid string
+                    emit_error!(inval, e);
+                    // return dummy value of the right type to squash subsequent errors
+                    $fn(None).into()
+                }
             }
         }
-    }};
+    };
 }
 
 // IP types
@@ -43,12 +47,16 @@ fn ip4_tokens(addr: Option<Ipv4Addr>) -> proc_macro2::TokenStream {
     quote! { ::std::net::Ipv4Addr::new(#(#octets),*) }
 }
 
+make_macro!(ip4, Ipv4Addr, ip4_tokens);
+
 fn ip6_tokens(addr: Option<Ipv6Addr>) -> proc_macro2::TokenStream {
     let addr = addr.unwrap_or(Ipv6Addr::UNSPECIFIED);
     let segments = addr.segments();
 
     quote! { ::std::net::Ipv6Addr::new(#(#segments),*) }
 }
+
+make_macro!(ip6, Ipv6Addr, ip6_tokens);
 
 fn ipaddr_tokens(addr: Option<IpAddr>) -> proc_macro2::TokenStream {
     let addr = addr.unwrap_or(IpAddr::V4(Ipv4Addr::UNSPECIFIED));
@@ -64,23 +72,7 @@ fn ipaddr_tokens(addr: Option<IpAddr>) -> proc_macro2::TokenStream {
     }
 }
 
-#[proc_macro]
-#[proc_macro_error]
-pub fn ip(input: TokenStream) -> TokenStream {
-    parse_type!(input, ipaddr_tokens, IpAddr)
-}
-
-#[proc_macro]
-#[proc_macro_error]
-pub fn ip4(input: TokenStream) -> TokenStream {
-    parse_type!(input, ip4_tokens, Ipv4Addr)
-}
-
-#[proc_macro]
-#[proc_macro_error]
-pub fn ip6(input: TokenStream) -> TokenStream {
-    parse_type!(input, ip6_tokens, Ipv6Addr)
-}
+make_macro!(ip, IpAddr, ipaddr_tokens);
 
 // SocketAddr types
 
@@ -92,6 +84,8 @@ fn sock4_tokens(addr: Option<SocketAddrV4>) -> proc_macro2::TokenStream {
     quote! { ::std::net::SocketAddrV4::new(#ip, #port) }
 }
 
+make_macro!(sock4, SocketAddrV4, sock4_tokens);
+
 fn sock6_tokens(addr: Option<SocketAddrV6>) -> proc_macro2::TokenStream {
     let addr = addr.unwrap_or(SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0));
     let ip = ip6_tokens(Some(*addr.ip()));
@@ -99,6 +93,8 @@ fn sock6_tokens(addr: Option<SocketAddrV6>) -> proc_macro2::TokenStream {
 
     quote! { ::std::net::SocketAddrV6::new(#ip, #port, 0, 0) }
 }
+
+make_macro!(sock6, SocketAddrV6, sock6_tokens);
 
 fn sockaddr_tokens(addr: Option<SocketAddr>) -> proc_macro2::TokenStream {
     let addr = addr.unwrap_or(SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0)));
@@ -114,23 +110,7 @@ fn sockaddr_tokens(addr: Option<SocketAddr>) -> proc_macro2::TokenStream {
     }
 }
 
-#[proc_macro]
-#[proc_macro_error]
-pub fn sock(input: TokenStream) -> TokenStream {
-    parse_type!(input, sockaddr_tokens, SocketAddr)
-}
-
-#[proc_macro]
-#[proc_macro_error]
-pub fn sock4(input: TokenStream) -> TokenStream {
-    parse_type!(input, sock4_tokens, SocketAddrV4)
-}
-
-#[proc_macro]
-#[proc_macro_error]
-pub fn sock6(input: TokenStream) -> TokenStream {
-    parse_type!(input, sock6_tokens, SocketAddrV6)
-}
+make_macro!(sock, SocketAddr, sockaddr_tokens);
 
 // IpNetwork types
 
@@ -146,6 +126,8 @@ cfg_if::cfg_if! {
             quote! { ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap() }
         }
 
+        make_macro!(net4, Ipv4Network, net4_tokens);
+
         fn net6_tokens(net: Option<Ipv6Network>) -> proc_macro2::TokenStream {
             let net = net.unwrap_or(Ipv6Network::new(Ipv6Addr::UNSPECIFIED, 0).unwrap());
             let ip = ip6_tokens(Some(net.ip()));
@@ -153,6 +135,8 @@ cfg_if::cfg_if! {
 
             quote! { ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap() }
         }
+
+        make_macro!(net6, Ipv6Network, net6_tokens);
 
         fn net_tokens(net: Option<IpNetwork>) -> proc_macro2::TokenStream {
             let net = net.unwrap_or(IpNetwork::V4(
@@ -170,23 +154,7 @@ cfg_if::cfg_if! {
             }
         }
 
-        #[proc_macro]
-        #[proc_macro_error]
-        pub fn net(input: TokenStream) -> TokenStream {
-            parse_type!(input, net_tokens, IpNetwork)
-        }
-
-        #[proc_macro]
-        #[proc_macro_error]
-        pub fn net4(input: TokenStream) -> TokenStream {
-            parse_type!(input, net4_tokens, Ipv4Network)
-        }
-
-        #[proc_macro]
-        #[proc_macro_error]
-        pub fn net6(input: TokenStream) -> TokenStream {
-            parse_type!(input, net6_tokens, Ipv6Network)
-        }
+        make_macro!(net, IpNetwork, net_tokens);
     }
 }
 
@@ -203,12 +171,16 @@ cfg_if::cfg_if! {
             quote! { macaddr::MacAddr6::new(#(#bytes),*) }
         }
 
+        make_macro!(mac6, MacAddr6, mac6_tokens);
+
         fn mac8_tokens(addr: Option<MacAddr8>) -> proc_macro2::TokenStream {
             let addr = addr.unwrap_or(MacAddr8::from([0x00; 8]));
             let bytes = addr.into_array();
 
             quote! { macaddr::MacAddr8::new(#(#bytes),*) }
         }
+
+        make_macro!(mac8, MacAddr8, mac8_tokens);
 
         fn mac_tokens(addr: Option<MacAddr>) -> proc_macro2::TokenStream {
             let addr = addr.unwrap_or(MacAddr::V6(MacAddr6::from([0x00; 6])));
@@ -223,24 +195,7 @@ cfg_if::cfg_if! {
                 }
             }
         }
-
-        #[proc_macro]
-        #[proc_macro_error]
-        pub fn mac(input: TokenStream) -> TokenStream {
-            parse_type!(input, mac_tokens, MacAddr)
-        }
-
-        #[proc_macro]
-        #[proc_macro_error]
-        pub fn mac6(input: TokenStream) -> TokenStream {
-            parse_type!(input, mac6_tokens, MacAddr6)
-        }
-
-        #[proc_macro]
-        #[proc_macro_error]
-        pub fn mac8(input: TokenStream) -> TokenStream {
-            parse_type!(input, mac8_tokens, MacAddr8)
-        }
+        make_macro!(mac, MacAddr, mac_tokens);
     }
 }
 
