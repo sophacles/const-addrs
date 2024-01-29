@@ -29,10 +29,13 @@ There are macros for:
 | `std::net::Ipv6Addr`     | `ip6!`     |
 | `std::net::SocketAddr`   | `sock!`    |
 | `std::net::SocketAddrV4` | `sock4!`   |
-| `std::net::SocketAddrV6` | `sock6!`  |
+| `std::net::SocketAddrV6` | `sock6!`   |
 | `ipnetwork::IpNetwork`   | `net!`     |
 | `ipnetwork::Ipv4Network` | `net4!`    |
 | `ipnetwork::Ipv6Network` | `net6!`    |
+| `macaddr::MacAddr`       | `mac!`     |
+| `macaddr::MacAddr6`      | `mac6!`    |
+| `macaddr::MacAddr8`      | `mac8!`    |
 
 Each of the macros will parse using the `FromStr` implementation for 
 the type, refer to the type documentaton for format details.
@@ -41,6 +44,10 @@ Note: using `ipnetwork::*` types requires you to have the
 [ipnetwork crate](https://crates.io/crates/ipnetwork) in your depdencies. These
 types can be turned off by disabling the `ipnet` feature (which is on by
 default)
+
+Note: using `macaddr::*` requires the 
+[macaddr crate](https://crates.io/crates/macaddr) in your depdencies. These
+types can be turned off by disabling the `mac` feature (which is on by default)
 
 In all cases the expanded macro uses `const` constructors, allowing for simple
 string representations of network types without the cost of runtime parsing.
