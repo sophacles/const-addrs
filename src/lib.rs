@@ -199,7 +199,7 @@ cfg_if::cfg_if! {
             match net {
                 MacAddr::V6(net) => {
                     let net_tok = mac6_tokens(Some(net));
-                    quote! { macaddr::IpNetwork::V4(#net_tok) }
+                    quote! { macaddr::MacAddr::V6(#net_tok) }
                 }
                 MacAddr::V8(net) => {
                     let net_tok = mac8_tokens(Some(net));
@@ -242,6 +242,9 @@ mod tests {
         t.compile_fail("tests/fail/net.rs");
         t.compile_fail("tests/fail/net4.rs");
         t.compile_fail("tests/fail/net6.rs");
+        t.compile_fail("tests/fail/mac.rs");
+        t.compile_fail("tests/fail/mac6.rs");
+        t.compile_fail("tests/fail/mac8.rs");
 
         t.pass("tests/pass/ip.rs");
         t.pass("tests/pass/ip4.rs");
@@ -252,5 +255,8 @@ mod tests {
         t.pass("tests/pass/net.rs");
         t.pass("tests/pass/net4.rs");
         t.pass("tests/pass/net6.rs");
+        t.pass("tests/pass/mac.rs");
+        t.pass("tests/pass/mac6.rs");
+        t.pass("tests/pass/mac8.rs");
     }
 }

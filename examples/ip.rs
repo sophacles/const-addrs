@@ -1,6 +1,7 @@
 use ipnetwork::{IpNetwork, Ipv4Network};
-use net_macros::{ip, ip4, ip6, net, net4, sock, sock4, sock6};
-use std::net::IpAddr;
+use macaddr::MacAddr6;
+use net_macros::{ip, ip4, ip6, mac6, mac8, net, net4, sock, sock4, sock6};
+use std::{net::IpAddr, str::FromStr};
 
 fn test(ip: std::net::IpAddr) {
     println!("test! {}", ip);
@@ -52,4 +53,11 @@ fn main() {
     println!("it: {:?} - {}", it, it);
     assert_eq!(it.prefix(), 24);
     assert_eq!(it, Ipv4Network::new(ip4!("192.168.1.1"), 24).unwrap());
+
+    let it: IpNetwork = net4!("192.168.1.1/24").into();
+    assert_eq!(it, IpNetwork::new(ip!("192.168.1.1"), 24).unwrap());
+
+    let ma = MacAddr6::from_str("DE:AD:BE:EF:DE:AD");
+    println!("ma: {:?}", ma);
+    //let it = mac6!("DE:AD:BE:EF:DE:AD");
 }
