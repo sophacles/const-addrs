@@ -15,6 +15,6 @@ fn main() {
         IpNetwork::V6(net) => {
             assert_eq!(net, Ipv6Network::new(ip6!("2001:db8::32:23"), 64).unwrap());
         }
-        _ => panic!("should not be v6"),
+        _ => panic!("should not be v4"),
     }
 }
