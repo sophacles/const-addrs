@@ -9,8 +9,8 @@ proc-macro = true
 [features]
 #! The crate provides a set of optional features that can be enabled in your `cargo.toml` file.
 #!
-## By default, all features are enabled
-default = ["ipnet", "mac"]
+## By default, only generate stdlib types
+default = []
 ## enables generation of [`ipnetwork`] types
 ipnet = ["dep:ipnetwork"]
 ## enables generation of [`macaddr`] types
@@ -34,3 +34,7 @@ macaddr = "1.0"
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[[example]]
+name = "ip"
+required-features = ["ipnet", "macaddr"]
