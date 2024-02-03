@@ -7,12 +7,18 @@ edition = "2021"
 proc-macro = true
 
 [features]
+#! The crate provides a set of optional features that can be enabled in your `cargo.toml` file.
+#!
+## By default, all features are enabled
 default = ["ipnet", "mac"]
-ipnet = ["ipnetwork"]
-mac = ["macaddr"]
+## enables generation of [`ipnetwork`] types
+ipnet = ["dep:ipnetwork"]
+## enables generation of [`macaddr`] types
+mac = ["dep:macaddr"]
 
 [dependencies]
 cfg-if = "1"
+document-features = { version = "0.2", optional = true }
 ipnetwork = { version = "0.20.0", optional = true }
 macaddr = { version = "1.0", optional = true }
 proc-macro-error = "1.0"
@@ -24,3 +30,7 @@ syn = "2.0"
 trybuild = "1"
 ipnetwork = "0.20.0"
 macaddr = "1.0"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
