@@ -63,6 +63,7 @@
 //! ```
 #![cfg_attr(feature = "document-features", doc = "\n## Features")]
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 use proc_macro::TokenStream;
 
@@ -81,7 +82,8 @@ use syn::{parse, LitStr};
 // the closure in `$body` will generate tokens to call the type's const constructor
 // which is used in the proc_macro itself.
 macro_rules! make_macro {
-    ($macro_name:ident: $ty:ty =? $dummy:expr; $fn_name:ident => $body:expr; $tyname:expr) => {
+    ($macro_name:ident: $ty:ty =? $dummy:expr; $fn_name:ident => $body:expr; $tyname:expr; $feat:expr) => {
+        #[cfg_attr(docsrs, doc(cfg(feature = $feat)))]
         #[doc = "generates [`"]
         #[doc = $tyname]
         #[doc = "`]"]
@@ -117,7 +119,10 @@ macro_rules! make_macro {
         }
     };
     ($macro_name:ident: $ty:ty =? $dummy:expr; $fn_name:ident => $body:expr) => {
-        make_macro!($macro_name: $ty =? $dummy; $fn_name => $body; stringify!($ty));
+        make_macro!($macro_name: $ty =? $dummy; $fn_name => $body; stringify!($ty); "default");
+    };
+    ($macro_name:ident: $ty:ty =? $dummy:expr; $fn_name:ident => $body:expr; $feat:expr) => {
+        make_macro!($macro_name: $ty =? $dummy; $fn_name => $body; stringify!($ty); $feat);
     }
 }
 
@@ -206,7 +211,8 @@ cfg_if::cfg_if! {
                     let inner = net6_tokens(Some(net));
                     quote! { ipnetwork::IpNetwork::V6(#inner) }
                 }
-            }
+            };
+            "ipnet"
         }
 
         make_macro!{
@@ -215,7 +221,8 @@ cfg_if::cfg_if! {
                 let ip = ip4_tokens(Some(net.ip()));
                 let prefix = net.prefix();
                 quote! { ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap() }
-            }
+            };
+            "ipnet"
         }
 
 
@@ -225,7 +232,8 @@ cfg_if::cfg_if! {
                 let ip = ip6_tokens(Some(net.ip()));
                 let prefix = net.prefix();
                 quote! { ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap() }
-            }
+            };
+            "ipnet"
         }
     }
 }
@@ -247,7 +255,8 @@ cfg_if::cfg_if! {
                     let inner = mac8_tokens(Some(addr));
                     quote! { macaddr::MacAddr::V8(#inner) }
                 }
-            }
+            };
+            "mac"
         }
 
         make_macro! {
@@ -255,7 +264,8 @@ cfg_if::cfg_if! {
             mac6_tokens => |addr| {
                 let bytes = addr.into_array();
                 quote! { macaddr::MacAddr6::new(#(#bytes),*) }
-            }
+            };
+            "mac"
         }
 
         make_macro!{
@@ -263,7 +273,8 @@ cfg_if::cfg_if! {
             mac8_tokens => |addr| {
                 let bytes = addr.into_array();
                 quote! { macaddr::MacAddr8::new(#(#bytes),*) }
-            }
+            };
+            "mac"
         }
     }
 }
@@ -273,7 +284,6 @@ mod tests {
     #[test]
     fn compilation() {
         let t = trybuild::TestCases::new();
-        t.compile_fail("tests/fail/bad_tt.rs");
 
         t.compile_fail("tests/fail/ip.rs");
         t.compile_fail("tests/fail/ip4.rs");

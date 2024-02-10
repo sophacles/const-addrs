@@ -11,4 +11,4 @@ serv:
 .PHONY: test
 test:
 	cargo test --all-features
-	cargo +nightly test --all-features
+	cargo +nightly test --all-features 
