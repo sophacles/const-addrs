@@ -1,6 +1,6 @@
 use std::net::SocketAddrV4;
 
-use net_macros::{ip4, sock4};
+use const_addrs::{ip4, sock4};
 
 fn main() {
     let a = sock4!("192.168.1.1:300");

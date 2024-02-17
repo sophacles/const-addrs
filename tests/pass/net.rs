@@ -1,6 +1,6 @@
 use ipnetwork::{IpNetwork, Ipv4Network, Ipv6Network};
 
-use net_macros::{ip4, ip6, net};
+use const_addrs::{ip4, ip6, net};
 
 fn main() {
     let a = net!("192.168.1.1/24");

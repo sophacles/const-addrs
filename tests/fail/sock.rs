@@ -1,4 +1,4 @@
-use net_macros::sock;
+use const_addrs::sock;
 
 fn main() {
     let a = sock!("192.168.11:300");

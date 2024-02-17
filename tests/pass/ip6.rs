@@ -1,4 +1,4 @@
-use net_macros::ip6;
+use const_addrs::ip6;
 use std::net::Ipv6Addr;
 
 fn main() {

@@ -1,6 +1,6 @@
 use macaddr::{MacAddr, MacAddr6, MacAddr8};
 
-use net_macros::mac;
+use const_addrs::mac;
 
 fn main() {
     let a = mac!("c0:ff:ee:c0:ff:ee");

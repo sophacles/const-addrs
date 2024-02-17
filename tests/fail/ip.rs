@@ -1,4 +1,4 @@
-use net_macros::ip;
+use const_addrs::ip;
 
 fn main() {
     let a = ip!("192.168.11");

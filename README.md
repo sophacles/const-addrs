@@ -1,10 +1,10 @@
-# net-macros
+# const-addrs
 
 A set of macros for creating networking types from a string literal.
 
 ```rust
 use std::net::Ipv4Addr;
-use net_macros::ip4;
+use const_addrs::ip4;
 
 let a = ip4!("192.168.1.1");
 let b = Ipv4Addr::new(192,168,1,1);

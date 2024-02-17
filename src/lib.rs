@@ -2,7 +2,7 @@
 //!
 //! ```rust
 //! use std::net::Ipv4Addr;
-//! use net_macros::ip4;
+//! use const_addrs::ip4;
 //!
 //! # fn main() {
 //! let a = ip4!("192.168.1.1");
@@ -27,7 +27,7 @@
 //! For example:
 //! ```rust
 //! # use std::net::Ipv4Addr;
-//! # use net_macros::ip;
+//! # use const_addrs::ip;
 //!
 //! # fn main() {
 //! let val = ip!("192.168.1.1");
@@ -48,7 +48,7 @@
 //! For example:
 //! ```rust
 //! # use std::net::Ipv4Addr;
-//! # use net_macros::net;
+//! # use const_addrs::net;
 //!
 //! # fn main() {
 //! let val = net!("192.168.1.1/24");
