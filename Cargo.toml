@@ -1,5 +1,5 @@
 [package]
-name = "net-macros"
+name = "const-addrs"
 version = "0.1.0"
 edition = "2021"
 

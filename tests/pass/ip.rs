@@ -1,4 +1,4 @@
-use net_macros::ip;
+use const_addrs::ip;
 
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 

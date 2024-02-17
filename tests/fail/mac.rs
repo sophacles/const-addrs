@@ -1,4 +1,4 @@
-use net_macros::mac;
+use const_addrs::mac;
 
 fn main() {
     let a = mac!("ca:fe:ca:fe");

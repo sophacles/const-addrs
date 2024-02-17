@@ -1,4 +1,4 @@
-use net_macros::net;
+use const_addrs::net;
 
 fn main() {
     let a = net!("192.168.1.1/300");

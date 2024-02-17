@@ -1,6 +1,6 @@
 use ipnetwork::Ipv6Network;
 
-use net_macros::{ip6, net6};
+use const_addrs::{ip6, net6};
 
 fn main() {
     let a = net6!("2001:db8::32:23/63");

@@ -1,6 +1,6 @@
 use macaddr::MacAddr8;
 
-use net_macros::mac8;
+use const_addrs::mac8;
 
 fn main() {
     let a = mac8!("c0:ff:ee:c0:ff:ee:ca:fe");

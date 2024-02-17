@@ -1,6 +1,6 @@
 use std::net::SocketAddrV6;
 
-use net_macros::{ip6, sock6};
+use const_addrs::{ip6, sock6};
 
 fn main() {
     let a = sock6!("[2001:db8::32:23]:22");
