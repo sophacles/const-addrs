@@ -2,6 +2,10 @@
 
 A set of macros for creating networking types from a string literal.
 
+Each of the macros will parse using the `FromStr` implementation for 
+the appropriate type. The generated code will use a `const` constructor 
+for the type, if one exists, to eliminate runtime overhead.
+
 ```rust
 use std::net::Ipv4Addr;
 use const_addrs::ip4;
@@ -37,8 +41,6 @@ There are macros for:
 | `macaddr::MacAddr6`      | `mac6!`    |
 | `macaddr::MacAddr8`      | `mac8!`    |
 
-Each of the macros will parse using the `FromStr` implementation for 
-the type, refer to the type documentaton for format details.
 
 Note: using `ipnetwork::*` types requires you to have the 
 [ipnetwork crate](https://crates.io/crates/ipnetwork) in your depdencies. These
