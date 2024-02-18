@@ -42,14 +42,14 @@ There are macros for:
 | `macaddr::MacAddr8`      | `mac8!`    |
 
 
-Note: using `ipnetwork::*` types requires you to have the 
+*Note*: using `ipnetwork::*` types requires you to have the 
 [ipnetwork crate](https://crates.io/crates/ipnetwork) in your depdencies. These
-types can be turned off by disabling the `ipnet` feature (which is on by
+types can be enabled with the `ipnet` feature.
 default)
 
-Note: using `macaddr::*` requires the 
+*Note*: using `macaddr::*` requires the 
 [macaddr crate](https://crates.io/crates/macaddr) in your depdencies. These
-types can be turned off by disabling the `mac` feature (which is on by default)
+types can be enabled with the `mac` feature.
 
-In all cases the expanded macro uses `const` constructors, allowing for simple
+When possible the expanded macro uses `const` constructors, allowing for simple
 string representations of network types without the cost of runtime parsing.
