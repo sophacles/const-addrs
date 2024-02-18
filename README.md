@@ -4,7 +4,7 @@ A set of macros for creating networking types from a string literal.
 
 Each of the macros will parse using the `FromStr` implementation for 
 the appropriate type. The generated code will use a `const` constructor 
-for the type, if one exists, to eliminate runtime overhead.
+for the type, if one exists.
 
 ```rust
 use std::net::Ipv4Addr;

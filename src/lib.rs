@@ -26,11 +26,17 @@
 //!
 //! For example:
 //! ```rust
-//! # use std::net::Ipv4Addr;
-//! # use const_addrs::ip;
-//!
+//! # use std::net::SocketAddr;
+//! # use const_addrs::sock;
+//! #
 //! # fn main() {
-//! let val = ip!("192.168.1.1");
+//! let val = sock!("192.168.1.1:500");
+//! # // copied from below for doctest verification
+//! # let val2 = ::std::net::SocketAddr::V4(::std::net::SocketAddrV4::new(
+//! #     ::std::net::Ipv4Addr::new(192u8, 168u8, 1u8, 1u8),
+//! #     500u16,
+//! # ));
+//! # assert_eq!(val, val2)
 //! # }
 //! ```
 //! expands to:
@@ -47,11 +53,16 @@
 //!
 //! For example:
 //! ```rust
-//! # use std::net::Ipv4Addr;
 //! # use const_addrs::net;
-//!
+//! #
 //! # fn main() {
 //! let val = net!("192.168.1.1/24");
+//! # // copied from below for doctest verification
+//! # let val2 = ipnetwork::IpNetwork::V4(
+//! #     ipnetwork::Ipv4Network::new(::std::net::Ipv4Addr::new(192u8, 168u8, 1u8, 1u8), 24u8)
+//! #         .unwrap(),
+//! # );
+//! # assert_eq!(val, val2);
 //! # }
 //! ```
 //! expands to:
@@ -82,7 +93,7 @@ use syn::{parse, LitStr};
 // the closure in `$body` will generate tokens to call the type's const constructor
 // which is used in the proc_macro itself.
 macro_rules! make_macro {
-    ($macro_name:ident: $ty:ty =? $dummy:expr; $fn_name:ident => $body:expr; $tyname:expr; $feat:expr) => {
+    ($macro_name:ident: $ty:ty =? $dummy:expr; $generate_fn:ident => $body:expr; $tyname:expr; $feat:expr) => {
         #[cfg_attr(docsrs, doc(cfg(feature = $feat)))]
         #[doc = "generates [`"]
         #[doc = $tyname]
@@ -101,28 +112,29 @@ macro_rules! make_macro {
             };
 
             // try to parse type
-            match <$ty>::from_str(inval.value().as_str()) {
+            let val = match <$ty>::from_str(inval.value().as_str()) {
                 // if good, turn it into the right token stream
-                Ok(v) => $fn_name(Some(v)).into(),
+                Ok(v) => v,
                 Err(e) => {
                     // otherwise emit the parse error with the parser's error message
                     // as well as make the compile error show the invalid string
                     emit_error!(inval, e);
                     // return dummy value of the right type to squash subsequent errors
-                    $fn_name(None).into()
+                    $dummy
                 }
-            }
+            };
+            $generate_fn(val).into()
         }
 
-        fn $fn_name(input: Option<$ty>) -> proc_macro2::TokenStream {
-            input.or(Some($dummy)).map($body).unwrap()
+        fn $generate_fn(input: $ty) -> proc_macro2::TokenStream {
+            Some(input).map($body).unwrap()
         }
     };
-    ($macro_name:ident: $ty:ty =? $dummy:expr; $fn_name:ident => $body:expr) => {
-        make_macro!($macro_name: $ty =? $dummy; $fn_name => $body; stringify!($ty); "default");
+    ($macro_name:ident: $ty:ty =? $dummy:expr; $generate_fn:ident => $body:expr) => {
+        make_macro!($macro_name: $ty =? $dummy; $generate_fn => $body; stringify!($ty); "default");
     };
-    ($macro_name:ident: $ty:ty =? $dummy:expr; $fn_name:ident => $body:expr; $feat:expr) => {
-        make_macro!($macro_name: $ty =? $dummy; $fn_name => $body; stringify!($ty); $feat);
+    ($macro_name:ident: $ty:ty =? $dummy:expr; $generate_fn:ident => $body:expr; $feat:expr) => {
+        make_macro!($macro_name: $ty =? $dummy; $generate_fn => $body; stringify!($ty); $feat);
     }
 }
 
@@ -132,11 +144,11 @@ make_macro! {
     ip: IpAddr =? IpAddr::V4(Ipv4Addr::UNSPECIFIED);
     ipaddr_tokens => |input| match input {
         IpAddr::V4(ip) => {
-            let inner = ip4_tokens(Some(ip));
+            let inner = ip4_tokens(ip);
             quote! { ::std::net::IpAddr::V4(#inner) }
         }
         IpAddr::V6(ip) => {
-            let inner = ip6_tokens(Some(ip));
+            let inner = ip6_tokens(ip);
             quote! { ::std::net::IpAddr::V6(#inner) }
         }
     }
@@ -165,11 +177,11 @@ make_macro! {
     sockaddr_tokens => |addr| {
         match addr {
             SocketAddr::V4(sock) => {
-                let inner = sock4_tokens(Some(sock));
+                let inner = sock4_tokens(sock);
                 quote! { ::std::net::SocketAddr::V4(#inner) }
             }
             SocketAddr::V6(sock) => {
-                let inner = sock6_tokens(Some(sock));
+                let inner = sock6_tokens(sock);
                 quote! { ::std::net::SocketAddr::V6(#inner) }
             }
         }
@@ -179,7 +191,7 @@ make_macro! {
 make_macro! {
     sock4: SocketAddrV4 =? SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, 0);
     sock4_tokens => |input| {
-        let ip = ip4_tokens(Some(*input.ip()));
+        let ip = ip4_tokens(*input.ip());
         let port = input.port();
         quote! { ::std::net::SocketAddrV4::new(#ip, #port) }
     }
@@ -188,7 +200,7 @@ make_macro! {
 make_macro! {
     sock6: SocketAddrV6 =? SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0);
     sock6_tokens => |addr| {
-        let ip = ip6_tokens(Some(*addr.ip()));
+        let ip = ip6_tokens(*addr.ip());
         let port = addr.port();
         quote! { ::std::net::SocketAddrV6::new(#ip, #port, 0, 0) }
     }
@@ -204,11 +216,11 @@ cfg_if::cfg_if! {
             net: IpNetwork =? IpNetwork::V4(Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
             net_tokens => |net| match net {
                 IpNetwork::V4(net) => {
-                    let inner = net4_tokens(Some(net));
+                    let inner = net4_tokens(net);
                     quote! { ipnetwork::IpNetwork::V4(#inner) }
                 }
                 IpNetwork::V6(net) => {
-                    let inner = net6_tokens(Some(net));
+                    let inner = net6_tokens(net);
                     quote! { ipnetwork::IpNetwork::V6(#inner) }
                 }
             };
@@ -218,7 +230,7 @@ cfg_if::cfg_if! {
         make_macro!{
             net4: Ipv4Network =? Ipv4Network::new(Ipv4Addr::UNSPECIFIED, 0).unwrap();
             net4_tokens => |net| {
-                let ip = ip4_tokens(Some(net.ip()));
+                let ip = ip4_tokens(net.ip());
                 let prefix = net.prefix();
                 quote! { ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap() }
             };
@@ -229,7 +241,7 @@ cfg_if::cfg_if! {
         make_macro!{
             net6: Ipv6Network =? Ipv6Network::new(Ipv6Addr::UNSPECIFIED, 0).unwrap();
             net6_tokens => |net| {
-                let ip = ip6_tokens(Some(net.ip()));
+                let ip = ip6_tokens(net.ip());
                 let prefix = net.prefix();
                 quote! { ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap() }
             };
@@ -248,11 +260,11 @@ cfg_if::cfg_if! {
             mac: MacAddr =? MacAddr::V6(MacAddr6::from([0x00; 6]));
             mac_tokens => |addr| match addr {
                 MacAddr::V6(addr) => {
-                    let inner = mac6_tokens(Some(addr));
+                    let inner = mac6_tokens(addr);
                     quote! { macaddr::MacAddr::V6(#inner) }
                 }
                 MacAddr::V8(addr) => {
-                    let inner = mac8_tokens(Some(addr));
+                    let inner = mac8_tokens(addr);
                     quote! { macaddr::MacAddr::V8(#inner) }
                 }
             };
