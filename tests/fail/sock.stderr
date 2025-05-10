@@ -1,11 +1,11 @@
 error: invalid socket address syntax
  --> tests/fail/sock.rs:4:19
   |
-4 |     let a = sock!("192.168.11:300");
+4 |     let _ = sock!("192.168.11:300");
   |                   ^^^^^^^^^^^^^^^^
 
 error: invalid socket address syntax
  --> tests/fail/sock.rs:5:19
   |
-5 |     let b = sock!("2001:db8::32::23:22");
+5 |     let _ = sock!("2001:db8::32::23:22");
   |                   ^^^^^^^^^^^^^^^^^^^^^

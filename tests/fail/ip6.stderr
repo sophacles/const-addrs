@@ -1,5 +1,5 @@
 error: invalid IPv6 address syntax
  --> tests/fail/ip6.rs:4:18
   |
-4 |     let a = ip6!("2001:db8::32::23");
+4 |     let _ = ip6!("2001:db8::32::23");
   |                  ^^^^^^^^^^^^^^^^^^

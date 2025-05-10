@@ -1,5 +1,5 @@
 error: Invalid length of 20 characters
  --> tests/fail/mac6.rs:4:19
   |
-4 |     let a = mac6!("ca:fe:ca:fe:c0:ff:ee");
+4 |     let _ = mac6!("ca:fe:ca:fe:c0:ff:ee");
   |                   ^^^^^^^^^^^^^^^^^^^^^^

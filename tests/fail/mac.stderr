@@ -1,5 +1,5 @@
 error: Invalid length of 11 characters
  --> tests/fail/mac.rs:4:18
   |
-4 |     let a = mac!("ca:fe:ca:fe");
+4 |     let _ = mac!("ca:fe:ca:fe");
   |                  ^^^^^^^^^^^^^

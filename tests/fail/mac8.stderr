@@ -1,5 +1,5 @@
 error: Invalid length of 17 characters
  --> tests/fail/mac8.rs:4:19
   |
-4 |     let a = mac8!("ca:fe:ca:fe:ca:fe");
+4 |     let _ = mac8!("ca:fe:ca:fe:ca:fe");
   |                   ^^^^^^^^^^^^^^^^^^^

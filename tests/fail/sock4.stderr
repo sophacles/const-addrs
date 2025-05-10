@@ -1,5 +1,5 @@
 error: invalid IPv4 socket address syntax
  --> tests/fail/sock4.rs:4:20
   |
-4 |     let a = sock4!("192.168.11:300");
+4 |     let _ = sock4!("192.168.11:300");
   |                    ^^^^^^^^^^^^^^^^

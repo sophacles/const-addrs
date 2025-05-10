@@ -1,5 +1,5 @@
 use const_addrs::sock4;
 
 fn main() {
-    let a = sock4!("192.168.11:300");
+    let _ = sock4!("192.168.11:300");
 }
