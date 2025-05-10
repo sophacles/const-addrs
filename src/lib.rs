@@ -232,7 +232,7 @@ cfg_if::cfg_if! {
             net4_tokens => |net| {
                 let ip = ip4_tokens(net.ip());
                 let prefix = net.prefix();
-                quote! { ipnetwork::Ipv4Network::new(#ip, #prefix).unwrap() }
+                quote! { ipnetwork::Ipv4Network::new_checked(#ip, #prefix).unwrap() }
             };
             "ipnet"
         }
@@ -243,7 +243,7 @@ cfg_if::cfg_if! {
             net6_tokens => |net| {
                 let ip = ip6_tokens(net.ip());
                 let prefix = net.prefix();
-                quote! { ipnetwork::Ipv6Network::new(#ip, #prefix).unwrap() }
+                quote! { ipnetwork::Ipv6Network::new_checked(#ip, #prefix).unwrap() }
             };
             "ipnet"
         }
