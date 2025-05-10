@@ -1,12 +1,12 @@
 //! A set of macros for creating networking types from a string literal.
 //!
 //! ```rust
-//! use std::net::Ipv4Addr;
-//! use const_addrs::ip4;
+//! use std::net::{Ipv4Addr, IpAddr};
+//! use const_addrs::ip;
 //!
 //! # fn main() {
-//! let a = ip4!("192.168.1.1");
-//! let b = Ipv4Addr::new(192,168,1,1);
+//! let a = ip!("192.168.1.1");
+//! let b = IpAddr::V4(Ipv4Addr::new(192,168,1,1));
 //! assert_eq!(a, b);
 //!  # }
 //! ```
@@ -22,7 +22,7 @@
 //!
 //! These macros will parse the string passed to them using its type's [`FromStr`] implementation.
 //! See the documentation for each type for formatting details. The macro generated code will use
-//! the `const` constructor(s) for stdlib and macaddr types, adding no runtime overhead.
+//! the `const` constructor(s) for the types, adding no runtime overhead.
 //!
 //! For example:
 //! ```rust
@@ -45,32 +45,6 @@
 //!     ::std::net::Ipv4Addr::new(192u8, 168u8, 1u8, 1u8),
 //!     500u16,
 //! ));
-//! ```
-//!
-//! [`ipnetwork`] types do not provide a const constructor and return a
-//! [`Result`]. These are unwrapped in the generated code, since they are
-//! validated when the macro runs.
-//!
-//! For example:
-//! ```rust
-//! # use const_addrs::net;
-//! #
-//! # fn main() {
-//! let val = net!("192.168.1.1/24");
-//! # // copied from below for doctest verification
-//! # let val2 = ipnetwork::IpNetwork::V4(
-//! #     ipnetwork::Ipv4Network::new(::std::net::Ipv4Addr::new(192u8, 168u8, 1u8, 1u8), 24u8)
-//! #         .unwrap(),
-//! # );
-//! # assert_eq!(val, val2);
-//! # }
-//! ```
-//! expands to:
-//! ```rust
-//! let val = ipnetwork::IpNetwork::V4(
-//!     ipnetwork::Ipv4Network::new(::std::net::Ipv4Addr::new(192u8, 168u8, 1u8, 1u8), 24u8)
-//!         .unwrap(),
-//! );
 //! ```
 #![cfg_attr(feature = "document-features", doc = "\n## Features")]
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
