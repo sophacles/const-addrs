@@ -18,9 +18,9 @@ proc-macro = true
 ## By default, only generate stdlib types
 default = []
 ## enables generation of [`ipnetwork`] types
-ipnet = ["dep:ipnetwork"]
+ipnetwork = ["dep:ipnetwork"]
 ## enables generation of [`macaddr`] types
-mac = ["dep:macaddr"]
+macaddr = ["dep:macaddr"]
 
 [dependencies]
 cfg-if = "1"
