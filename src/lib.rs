@@ -183,7 +183,7 @@ make_macro! {
 // IpNetwork types
 
 cfg_if::cfg_if! {
-    if #[cfg(feature = "ipnet")] {
+    if #[cfg(feature = "ipnetwork")] {
         use ipnetwork::{IpNetwork, Ipv4Network, Ipv6Network};
 
         make_macro!{
@@ -198,7 +198,7 @@ cfg_if::cfg_if! {
                     quote! { ipnetwork::IpNetwork::V6(#inner) }
                 }
             };
-            "ipnet"
+            "ipnetwork"
         }
 
         make_macro!{
@@ -208,7 +208,7 @@ cfg_if::cfg_if! {
                 let prefix = net.prefix();
                 quote! { ipnetwork::Ipv4Network::new_checked(#ip, #prefix).unwrap() }
             };
-            "ipnet"
+            "ipnetwork"
         }
 
 
@@ -219,7 +219,7 @@ cfg_if::cfg_if! {
                 let prefix = net.prefix();
                 quote! { ipnetwork::Ipv6Network::new_checked(#ip, #prefix).unwrap() }
             };
-            "ipnet"
+            "ipnetwork"
         }
     }
 }
@@ -227,7 +227,7 @@ cfg_if::cfg_if! {
 // MacAddr types
 
 cfg_if::cfg_if! {
-    if #[cfg(feature = "mac")] {
+    if #[cfg(feature = "macaddr")] {
         use macaddr::{MacAddr, MacAddr6, MacAddr8};
 
         make_macro!{
@@ -242,7 +242,7 @@ cfg_if::cfg_if! {
                     quote! { macaddr::MacAddr::V8(#inner) }
                 }
             };
-            "mac"
+            "macaddr"
         }
 
         make_macro! {
@@ -251,7 +251,7 @@ cfg_if::cfg_if! {
                 let bytes = addr.into_array();
                 quote! { macaddr::MacAddr6::new(#(#bytes),*) }
             };
-            "mac"
+            "macaddr"
         }
 
         make_macro!{
@@ -260,7 +260,7 @@ cfg_if::cfg_if! {
                 let bytes = addr.into_array();
                 quote! { macaddr::MacAddr8::new(#(#bytes),*) }
             };
-            "mac"
+            "macaddr"
         }
     }
 }
@@ -278,13 +278,13 @@ mod tests {
         t.compile_fail("tests/fail/sock4.rs");
         t.compile_fail("tests/fail/sock6.rs");
 
-        if cfg!(feature = "ipnet") {
+        if cfg!(feature = "ipnetwork") {
             t.compile_fail("tests/fail/net.rs");
             t.compile_fail("tests/fail/net4.rs");
             t.compile_fail("tests/fail/net6.rs");
         }
 
-        if cfg!(feature = "mac") {
+        if cfg!(feature = "macaddr") {
             t.compile_fail("tests/fail/mac.rs");
             t.compile_fail("tests/fail/mac6.rs");
             t.compile_fail("tests/fail/mac8.rs");
@@ -297,13 +297,13 @@ mod tests {
         t.pass("tests/pass/sock4.rs");
         t.pass("tests/pass/sock6.rs");
 
-        if cfg!(feature = "ipnet") {
+        if cfg!(feature = "ipnetwork") {
             t.pass("tests/pass/net.rs");
             t.pass("tests/pass/net4.rs");
             t.pass("tests/pass/net6.rs");
         }
 
-        if cfg!(feature = "mac") {
+        if cfg!(feature = "macaddr") {
             t.pass("tests/pass/mac.rs");
             t.pass("tests/pass/mac6.rs");
             t.pass("tests/pass/mac8.rs");

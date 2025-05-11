@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+### Changed
+- Rename the "ipnet" feature to "ipnetwork" to match the dependency.
+- Rename the "mac" feature to "macaddr" to match the dependency.
 
 
 ## [0.2.0] - 2025-05-11
