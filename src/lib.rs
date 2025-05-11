@@ -277,12 +277,18 @@ mod tests {
         t.compile_fail("tests/fail/sock.rs");
         t.compile_fail("tests/fail/sock4.rs");
         t.compile_fail("tests/fail/sock6.rs");
-        t.compile_fail("tests/fail/net.rs");
-        t.compile_fail("tests/fail/net4.rs");
-        t.compile_fail("tests/fail/net6.rs");
-        t.compile_fail("tests/fail/mac.rs");
-        t.compile_fail("tests/fail/mac6.rs");
-        t.compile_fail("tests/fail/mac8.rs");
+
+        if cfg!(feature = "ipnet") {
+            t.compile_fail("tests/fail/net.rs");
+            t.compile_fail("tests/fail/net4.rs");
+            t.compile_fail("tests/fail/net6.rs");
+        }
+
+        if cfg!(feature = "mac") {
+            t.compile_fail("tests/fail/mac.rs");
+            t.compile_fail("tests/fail/mac6.rs");
+            t.compile_fail("tests/fail/mac8.rs");
+        }
 
         t.pass("tests/pass/ip.rs");
         t.pass("tests/pass/ip4.rs");
@@ -290,11 +296,17 @@ mod tests {
         t.pass("tests/pass/sock.rs");
         t.pass("tests/pass/sock4.rs");
         t.pass("tests/pass/sock6.rs");
-        t.pass("tests/pass/net.rs");
-        t.pass("tests/pass/net4.rs");
-        t.pass("tests/pass/net6.rs");
-        t.pass("tests/pass/mac.rs");
-        t.pass("tests/pass/mac6.rs");
-        t.pass("tests/pass/mac8.rs");
+
+        if cfg!(feature = "ipnet") {
+            t.pass("tests/pass/net.rs");
+            t.pass("tests/pass/net4.rs");
+            t.pass("tests/pass/net6.rs");
+        }
+
+        if cfg!(feature = "mac") {
+            t.pass("tests/pass/mac.rs");
+            t.pass("tests/pass/mac6.rs");
+            t.pass("tests/pass/mac8.rs");
+        }
     }
 }
