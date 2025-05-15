@@ -224,6 +224,49 @@ cfg_if::cfg_if! {
     }
 }
 
+// ipnet types
+cfg_if::cfg_if! {
+    if #[cfg(feature = "ipnet")] {
+        use ipnet::{IpNet, Ipv4Net, Ipv6Net};
+
+        make_macro!{
+            ipnet: IpNet =? IpNet::V4(Ipv4Net::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
+            ipnet_tokens => |net| match net {
+                IpNet::V4(net) => {
+                    let inner = ipnet4_tokens(net);
+                    quote! { ipnet::IpNet::V4(#inner) }
+                }
+                IpNet::V6(net) => {
+                    let inner = ipnet6_tokens(net);
+                    quote! { ipnet::IpNet::V6(#inner) }
+                }
+            };
+            "ipnetwork"
+        }
+
+        make_macro!{
+            ipnet4: Ipv4Net =? Ipv4Net::new(Ipv4Addr::UNSPECIFIED, 0).unwrap();
+            ipnet4_tokens => |net| {
+                let ip = ip4_tokens(net.addr());
+                let prefix = net.prefix_len();
+                quote! { ipnet::Ipv4Net::new_assert(#ip, #prefix) }
+            };
+            "ipnetwork"
+        }
+
+
+        make_macro!{
+            ipnet6: Ipv6Net =? Ipv6Net::new(Ipv6Addr::UNSPECIFIED, 0).unwrap();
+            ipnet6_tokens => |net| {
+                let ip = ip6_tokens(net.addr());
+                let prefix = net.prefix_len();
+                quote! { ipnet::Ipv6Net::new_assert(#ip, #prefix) }
+            };
+            "ipnetwork"
+        }
+    }
+}
+
 // MacAddr types
 
 cfg_if::cfg_if! {
@@ -282,6 +325,12 @@ mod tests {
             t.compile_fail("tests/fail/net.rs");
             t.compile_fail("tests/fail/net4.rs");
             t.compile_fail("tests/fail/net6.rs");
+        }
+
+        if cfg!(feature = "ipnet") {
+            t.compile_fail("tests/fail/ipnet.rs");
+            t.compile_fail("tests/fail/ipnet4.rs");
+            t.compile_fail("tests/fail/ipnet6.rs");
         }
 
         if cfg!(feature = "macaddr") {

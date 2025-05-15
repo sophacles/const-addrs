@@ -36,6 +36,9 @@ There are macros for:
 | `std::net::SocketAddr`   | `sock!`    |
 | `std::net::SocketAddrV4` | `sock4!`   |
 | `std::net::SocketAddrV6` | `sock6!`   |
+| `ipnet::IpNet`           | `ipnet!`   |
+| `ipnet::Ipv4Net`         | `ipnet4!`  |
+| `ipnet::Ipv6Net`         | `ipnet6!`  |
 | `ipnetwork::IpNetwork`   | `net!`     |
 | `ipnetwork::Ipv4Network` | `net4!`    |
 | `ipnetwork::Ipv6Network` | `net6!`    |
@@ -44,10 +47,13 @@ There are macros for:
 | `macaddr::MacAddr8`      | `mac8!`    |
 
 
+*Note*: using `ipnet::*` types requires you to have the 
+[ipnet crate](https://crates.io/crates/ipnet) in your depdencies. These
+types can be enabled with the `ipnet` feature.
+
 *Note*: using `ipnetwork::*` types requires you to have the 
 [ipnetwork crate](https://crates.io/crates/ipnetwork) in your depdencies. These
-types can be enabled with the `ipnet` feature.
-default)
+types can be enabled with the `ipnetwork` feature.
 
 *Note*: using `macaddr::*` requires the 
 [macaddr crate](https://crates.io/crates/macaddr) in your depdencies. These
