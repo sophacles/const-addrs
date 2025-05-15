@@ -1,0 +1,11 @@
+error: invalid IP address syntax
+ --> tests/fail/ipnet.rs:4:20
+  |
+4 |     let _ = ipnet!("192.168.1.1/300");
+  |                    ^^^^^^^^^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail/ipnet.rs:5:20
+  |
+5 |     let _ = ipnet!("2001:db8::32::23/129");
+  |                    ^^^^^^^^^^^^^^^^^^^^^^
