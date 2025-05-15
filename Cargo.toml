@@ -7,7 +7,10 @@ authors = ["Erich Heine"]
 description = "A set of macros for creating networking types from a string literal."
 readme = "README.md"
 repository = "https://github.com/sophacles/const-addrs"
+documentation = "https://docs.rs/const-addrs"
 exclude = ["Makefile", "CONTRIBUTING.md"]
+keywords = ["ip", "cidr", "network", "prefix", "subnet", "macro"]
+categories = ["network-programming"]
 
 [lib]
 proc-macro = true
