@@ -1,4 +1,6 @@
-# const-addrs
+# const-addrs [![Crates.io](https://img.shields.io/crates/v/const-addrs.svg)](https://crates.io/crates/const-addrs) ![License](https://img.shields.io/crates/l/const-addrs.svg) [![Documentation](https://docs.rs/const-addrs/badge.svg)](https://docs.rs/const-addrs/)
+
+Build Status: [![Build Status](https://github.com/sophacles/const-addrs/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/sophacles/const-addrs/actions/workflows/build-and-test.yml) [![Formatting Status](https://github.com/sophacles/const-addrs/actions/workflows/formatting.yml/badge.svg)](https://github.com/sophacles/const-addrs/actions/workflows/formatting.yml) [![Linting Status](https://github.com/sophacles/const-addrs/actions/workflows/linting.yml/badge.svg)](https://github.com/sophacles/const-addrs/actions/workflows/linting.yml)
 
 A set of macros for creating networking types from a string literal.
 
