@@ -1,0 +1,5 @@
+error: invalid IP address syntax
+ --> tests/fail/ipnet4.rs:4:21
+  |
+4 |     let _ = ipnet4!("192.168.1.1/300");
+  |                     ^^^^^^^^^^^^^^^^^
