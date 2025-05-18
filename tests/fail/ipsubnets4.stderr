@@ -1,0 +1,43 @@
+error: invalid IP address syntax
+ --> tests/fail/ipsubnets4.rs:4:25
+  |
+4 |     let _ = ipsubnets4!("10.0.01", "10.0.1.0", 24);
+  |                         ^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail/ipsubnets4.rs:5:37
+  |
+5 |     let _ = ipsubnets4!("10.0.0.1", "10.0.10", 24);
+  |                                     ^^^^^^^^^
+
+error: macro expansion ignores `compile_error` and any tokens following
+ --> tests/fail/ipsubnets4.rs:6:36
+  |
+6 |     let _ = ipsubnets4!("10.0.01", "10.0.10", 24);
+  |             -----------------------^^^^^^^^^----- caused by the macro expansion here
+  |
+  = note: the usage of `ipsubnets4!` is likely invalid in expression context
+
+error: invalid IP address syntax
+ --> tests/fail/ipsubnets4.rs:6:25
+  |
+6 |     let _ = ipsubnets4!("10.0.01", "10.0.10", 24);
+  |                         ^^^^^^^^^
+
+error: Addr is IPv6 but IPv4 is expected
+ --> tests/fail/ipsubnets4.rs:7:37
+  |
+7 |     let _ = ipsubnets4!("10.0.0.1", "2001:db8::32:23", 24);
+  |                                     ^^^^^^^^^^^^^^^^^
+
+error: Minimum prefix must be 32 or less
+ --> tests/fail/ipsubnets4.rs:8:50
+  |
+8 |     let _ = ipsubnets4!("10.0.0.1", "10.0.10.0", 33);
+  |                                                  ^^
+
+error: number too large to fit in target type
+ --> tests/fail/ipsubnets4.rs:9:50
+  |
+9 |     let _ = ipsubnets4!("10.0.0.1", "10.0.10.0", 260);
+  |                                                  ^^^

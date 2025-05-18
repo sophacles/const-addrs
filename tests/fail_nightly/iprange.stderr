@@ -1,0 +1,53 @@
+error: invalid IP address syntax
+ --> tests/fail_nightly/iprange.rs:4:41
+  |
+4 |     let _ = iprange!("2001:db8::32:23", "2001:db8::32::ffff");
+  |                                         ^^^^^^^^^^^^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail_nightly/iprange.rs:5:22
+  |
+5 |     let _ = iprange!("2001:db8::32::23", "2001:db8::32:ffff");
+  |                      ^^^^^^^^^^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail_nightly/iprange.rs:6:22
+  |
+6 |     let _ = iprange!("2001:db8::32::23", "2001:db8::32::ffff");
+  |                      ^^^^^^^^^^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail_nightly/iprange.rs:6:42
+  |
+6 |     let _ = iprange!("2001:db8::32::23", "2001:db8::32::ffff");
+  |                                          ^^^^^^^^^^^^^^^^^^^^
+
+error: Addr is IPv4 but IPv6 is expected
+ --> tests/fail_nightly/iprange.rs:7:41
+  |
+7 |     let _ = iprange!("2001:db8::32:23", "10.0.0.2");
+  |                                         ^^^^^^^^^^
+
+error: Addr is IPv6 but IPv4 is expected
+ --> tests/fail_nightly/iprange.rs:8:34
+  |
+8 |     let _ = iprange!("10.0.0.1", "2001:db8::32:23");
+  |                                  ^^^^^^^^^^^^^^^^^
+
+error: Addr is IPv4 but IPv6 is expected
+ --> tests/fail_nightly/iprange.rs:9:41
+  |
+9 |     let _ = iprange!("2001:db8::32:23", "10.0.0.1");
+  |                                         ^^^^^^^^^^
+
+error: invalid IP address syntax
+  --> tests/fail_nightly/iprange.rs:10:22
+   |
+10 |     let _ = iprange!("100.0.0", "10.0.0.255");
+   |                      ^^^^^^^^^
+
+error: invalid IP address syntax
+  --> tests/fail_nightly/iprange.rs:11:34
+   |
+11 |     let _ = iprange!("10.0.0.0", "10.0.0255");
+   |                                  ^^^^^^^^^^^

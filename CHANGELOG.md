@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
-- Initial support for `ipnet` network types
+- Support for `ipnet` network types: IpNet, IpAddrRange, IpSubnets (and their v4 and v6
+  specific equivalents)
 
 ### Changed
 - Rename the "ipnet" feature to "ipnetwork" to match the dependency.

@@ -1,0 +1,21 @@
+warning: This range will yeild no values: IP1 >= IP2
+ --> tests/warnings/iprange.rs:4:22
+  |
+4 |     let _ = iprange!("2001:db8::32:ffff", "2001:db8::32:23");
+  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: This iterator requires the lower IP value first in it's arguments list.
+
+warning: This range will yeild no values: IP1 >= IP2
+ --> tests/warnings/iprange.rs:5:22
+  |
+5 |     let _ = iprange!("10.128.0.0", "10.0.0.0");
+  |                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: This iterator requires the lower IP value first in it's arguments list.
+
+error: invalid IP address syntax
+ --> tests/warnings/iprange.rs:8:22
+  |
+8 |     let _ = iprange!("10128.0.0", "10.0.0.0");
+  |                      ^^^^^^^^^^^

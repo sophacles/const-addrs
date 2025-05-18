@@ -1,0 +1,29 @@
+error: invalid IP address syntax
+ --> tests/fail_nightly/iprange4.rs:4:23
+  |
+4 |     let _ = iprange4!("10.0.01", "10.0.1.0");
+  |                       ^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail_nightly/iprange4.rs:5:35
+  |
+5 |     let _ = iprange4!("10.0.0.1", "10.0.10");
+  |                                   ^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail_nightly/iprange4.rs:6:23
+  |
+6 |     let _ = iprange4!("10.0.01", "10.0.10");
+  |                       ^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail_nightly/iprange4.rs:6:34
+  |
+6 |     let _ = iprange4!("10.0.01", "10.0.10");
+  |                                  ^^^^^^^^^
+
+error: Addr is IPv6 but IPv4 is expected
+ --> tests/fail_nightly/iprange4.rs:7:35
+  |
+7 |     let _ = iprange4!("10.0.0.1", "2001:db8::32:23");
+  |                                   ^^^^^^^^^^^^^^^^^

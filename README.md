@@ -28,23 +28,27 @@ error: invalid IPv4 address syntax
 
 There are macros for:
 
-| Type                     | macro      |
-| ------------------------ | ---------- |
-| `std::net::IpAddr`       | `ip!`      |
-| `std::net::Ipv4Addr`     | `ip4!`     |
-| `std::net::Ipv6Addr`     | `ip6!`     |
-| `std::net::SocketAddr`   | `sock!`    |
-| `std::net::SocketAddrV4` | `sock4!`   |
-| `std::net::SocketAddrV6` | `sock6!`   |
-| `ipnet::IpNet`           | `ipnet!`   |
-| `ipnet::Ipv4Net`         | `ipnet4!`  |
-| `ipnet::Ipv6Net`         | `ipnet6!`  |
-| `ipnetwork::IpNetwork`   | `net!`     |
-| `ipnetwork::Ipv4Network` | `net4!`    |
-| `ipnetwork::Ipv6Network` | `net6!`    |
-| `macaddr::MacAddr`       | `mac!`     |
-| `macaddr::MacAddr6`      | `mac6!`    |
-| `macaddr::MacAddr8`      | `mac8!`    |
+| Type                     | macro         |
+| ------------------------ | ----------    |
+| `std::net::IpAddr`       | `ip!`         |
+| `std::net::Ipv4Addr`     | `ip4!`        |
+| `std::net::Ipv6Addr`     | `ip6!`        |
+| `std::net::SocketAddr`   | `sock!`       |
+| `std::net::SocketAddrV4` | `sock4!`      |
+| `std::net::SocketAddrV6` | `sock6!`      |
+| `ipnet::IpNet`           | `ipnet!`      |
+| `ipnet::IpAddrRange`     | `iprange!`    |
+| `ipnet::Ipv4AddrRange`   | `iprange4!`   |
+| `ipnet::Ipv6AddrRange`   | `iprange6!`   |
+| `ipnet::IpSubnets`       | `ipsubnets!`  |
+| `ipnet::Ipv4Subnets`     | `ipsubnets4!` |
+| `ipnet::Ipv6Subnets`     | `ipsubnets6!` |
+| `ipnetwork::IpNetwork`   | `net!`        |
+| `ipnetwork::Ipv4Network` | `net4!`       |
+| `ipnetwork::Ipv6Network` | `net6!`       |
+| `macaddr::MacAddr`       | `mac!`        |
+| `macaddr::MacAddr6`      | `mac6!`       |
+| `macaddr::MacAddr8`      | `mac8!`       |
 
 
 *Note*: using `ipnet::*` types requires you to have the 
