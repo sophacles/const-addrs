@@ -1,6 +1,6 @@
 use ipnet::Ipv4Net;
 
-use const_addrs::{ip4, net4};
+use const_addrs::{ip4, ipnet4};
 
 fn main() {
     let a = ipnet4!("192.168.1.1/24");

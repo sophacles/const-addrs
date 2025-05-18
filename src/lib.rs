@@ -311,7 +311,7 @@ cfg_if::cfg_if! {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn compilation() {
+    fn base_types() {
         let t = trybuild::TestCases::new();
 
         t.compile_fail("tests/fail/ip.rs");
@@ -321,41 +321,53 @@ mod tests {
         t.compile_fail("tests/fail/sock4.rs");
         t.compile_fail("tests/fail/sock6.rs");
 
-        if cfg!(feature = "ipnetwork") {
-            t.compile_fail("tests/fail/net.rs");
-            t.compile_fail("tests/fail/net4.rs");
-            t.compile_fail("tests/fail/net6.rs");
-        }
-
-        if cfg!(feature = "ipnet") {
-            t.compile_fail("tests/fail/ipnet.rs");
-            t.compile_fail("tests/fail/ipnet4.rs");
-            t.compile_fail("tests/fail/ipnet6.rs");
-        }
-
-        if cfg!(feature = "macaddr") {
-            t.compile_fail("tests/fail/mac.rs");
-            t.compile_fail("tests/fail/mac6.rs");
-            t.compile_fail("tests/fail/mac8.rs");
-        }
-
         t.pass("tests/pass/ip.rs");
         t.pass("tests/pass/ip4.rs");
         t.pass("tests/pass/ip6.rs");
         t.pass("tests/pass/sock.rs");
         t.pass("tests/pass/sock4.rs");
         t.pass("tests/pass/sock6.rs");
+    }
 
-        if cfg!(feature = "ipnetwork") {
-            t.pass("tests/pass/net.rs");
-            t.pass("tests/pass/net4.rs");
-            t.pass("tests/pass/net6.rs");
-        }
+    #[cfg(feature = "ipnetwork")]
+    #[test]
+    fn ipnetwork_types() {
+        let t = trybuild::TestCases::new();
 
-        if cfg!(feature = "macaddr") {
-            t.pass("tests/pass/mac.rs");
-            t.pass("tests/pass/mac6.rs");
-            t.pass("tests/pass/mac8.rs");
-        }
+        t.compile_fail("tests/fail/net.rs");
+        t.compile_fail("tests/fail/net4.rs");
+        t.compile_fail("tests/fail/net6.rs");
+
+        t.pass("tests/pass/net.rs");
+        t.pass("tests/pass/net4.rs");
+        t.pass("tests/pass/net6.rs");
+    }
+
+    #[cfg(feature = "ipnet")]
+    #[test]
+    fn ipnet_types() {
+        let t = trybuild::TestCases::new();
+
+        t.compile_fail("tests/fail/ipnet.rs");
+        t.compile_fail("tests/fail/ipnet4.rs");
+        t.compile_fail("tests/fail/ipnet6.rs");
+
+        t.pass("tests/pass/ipnet.rs");
+        t.pass("tests/pass/ipnet4.rs");
+        t.pass("tests/pass/ipnet6.rs");
+    }
+
+    #[cfg(feature = "macaddr")]
+    #[test]
+    fn macaddr_types() {
+        let t = trybuild::TestCases::new();
+
+        t.compile_fail("tests/fail/mac.rs");
+        t.compile_fail("tests/fail/mac6.rs");
+        t.compile_fail("tests/fail/mac8.rs");
+
+        t.pass("tests/pass/mac.rs");
+        t.pass("tests/pass/mac6.rs");
+        t.pass("tests/pass/mac8.rs");
     }
 }
