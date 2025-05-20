@@ -1,0 +1,57 @@
+error: invalid IP address syntax
+ --> tests/fail/ipsubnets6.rs:4:25
+  |
+4 |     let _ = ipsubnets6!("2001:db8::32::23", "2001:db8::32:ffff", 24);
+  |                         ^^^^^^^^^^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail/ipsubnets6.rs:5:44
+  |
+5 |     let _ = ipsubnets6!("2001:db8::32:23", "2001:db8::32::ffff", 24);
+  |                                            ^^^^^^^^^^^^^^^^^^^^
+
+error: macro expansion ignores `compile_error` and any tokens following
+ --> tests/fail/ipsubnets6.rs:6:45
+  |
+6 |     let _ = ipsubnets6!("2001:db8::32::23", "2001:db8::32::ffff", 24);
+  |             --------------------------------^^^^^^^^^^^^^^^^^^^^----- caused by the macro expansion here
+  |
+  = note: the usage of `ipsubnets6!` is likely invalid in expression context
+
+error: invalid IP address syntax
+ --> tests/fail/ipsubnets6.rs:6:25
+  |
+6 |     let _ = ipsubnets6!("2001:db8::32::23", "2001:db8::32::ffff", 24);
+  |                         ^^^^^^^^^^^^^^^^^^
+
+error: Addr is IPv4 but IPv6 is expected
+ --> tests/fail/ipsubnets6.rs:7:44
+  |
+7 |     let _ = ipsubnets6!("2001:db8::32:23", "10.0.0.1", 24);
+  |                                            ^^^^^^^^^^
+
+error: macro expansion ignores `compile_error` and any tokens following
+ --> tests/fail/ipsubnets6.rs:8:58
+  |
+8 |     let _ = ipsubnets6!("10.0.0.1", "2001:db8::32:ffff", 129);
+  |             ---------------------------------------------^^^- caused by the macro expansion here
+  |
+  = note: the usage of `ipsubnets6!` is likely invalid in expression context
+
+error: Addr is IPv4 but IPv6 is expected
+ --> tests/fail/ipsubnets6.rs:8:25
+  |
+8 |     let _ = ipsubnets6!("10.0.0.1", "2001:db8::32:ffff", 129);
+  |                         ^^^^^^^^^^
+
+error: Minimum prefix must be 128 or less
+ --> tests/fail/ipsubnets6.rs:9:65
+  |
+9 |     let _ = ipsubnets6!("2001:db8::32:23", "2001:db8::32:ffff", 129);
+  |                                                                 ^^^
+
+error: number too large to fit in target type
+  --> tests/fail/ipsubnets6.rs:10:65
+   |
+10 |     let _ = ipsubnets6!("2001:db8::32:23", "2001:db8::32:ffff", 260);
+   |                                                                 ^^^

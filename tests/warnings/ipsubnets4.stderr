@@ -1,0 +1,13 @@
+warning: This range will yeild no values: IP1 >= IP2
+ --> tests/warnings/ipsubnets4.rs:4:25
+  |
+4 |     let _ = ipsubnets4!("10.0.1.0", "10.0.0.0", 24);
+  |                         ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: This iterator requires the lower IP value first in it's arguments list.
+
+error: invalid IP address syntax
+ --> tests/warnings/ipsubnets4.rs:7:25
+  |
+7 |     let _ = ipsubnets4!("10.0.10", "10.0.0.0", 24);
+  |                         ^^^^^^^^^

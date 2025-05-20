@@ -227,7 +227,10 @@ cfg_if::cfg_if! {
 // ipnet types
 cfg_if::cfg_if! {
     if #[cfg(feature = "ipnet")] {
-        use ipnet::{IpNet, Ipv4Net, Ipv6Net};
+        use ipnet::{
+            IpNet, Ipv4Net, Ipv6Net,
+        };
+        use proc_macro_error::emit_warning;
 
         make_macro!{
             ipnet: IpNet =? IpNet::V4(Ipv4Net::new(Ipv4Addr::UNSPECIFIED, 0).unwrap());
@@ -264,6 +267,246 @@ cfg_if::cfg_if! {
             };
             "ipnetwork"
         }
+
+
+        struct RangeArgs {
+            ip1: IpAddr,
+            ip2: IpAddr,
+            span1: proc_macro2::Span,
+            span2: proc_macro2::Span,
+            cancel: bool,
+        }
+
+        impl syn::parse::Parse for RangeArgs {
+            fn parse(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
+                let ip1_lit = input.parse::<syn::LitStr>()?;
+                input.parse::<syn::Token![,]>()?;
+                let ip2_lit = input.parse::<LitStr>()?;
+
+                let span1 = ip1_lit.span();
+                let span2 = ip2_lit.span();
+
+                let mut cancel= false;
+                let ip1 = IpAddr::from_str(ip1_lit.value().as_str()).unwrap_or_else(|e| {
+                    emit_error!(ip1_lit, e);
+                    cancel= true;
+                    // return dummy value of the right type to squash subsequent errors
+                    IpAddr::V4(Ipv4Addr::UNSPECIFIED)
+                });
+                let ip2 = IpAddr::from_str(ip2_lit.value().as_str()).unwrap_or_else(|e| {
+                    emit_error!(ip2_lit, e);
+                    cancel= true;
+                    // return dummy value of the right type to squash subsequent errors
+                    IpAddr::V4(Ipv4Addr::UNSPECIFIED)
+                });
+
+                Ok(Self{ip1, ip2, span1, span2, cancel})
+            }
+        }
+
+        impl RangeArgs {
+            fn range_span(&self) -> Option<proc_macro2::Span> {
+               self.span1.join(self.span2)
+            }
+
+            fn v4_tokens(&self) -> proc_macro2::TokenStream  {
+                if self.cancel {
+                    let ip1_tok = ip4_tokens(Ipv4Addr::UNSPECIFIED);
+                    let ip2_tok = ip4_tokens(Ipv4Addr::UNSPECIFIED);
+                    return quote! { #ip1_tok, #ip2_tok }
+                }
+                let mut errored: bool = false;
+                let ip1_tok = match self.ip1 {
+                    IpAddr::V4(val) => ip4_tokens(val),
+                    IpAddr::V6(_) => {
+                        emit_error!(self.span1, "Addr is IPv6 but IPv4 is expected");
+                        errored = true;
+                        ip4_tokens(Ipv4Addr::UNSPECIFIED)
+                    }
+                };
+
+                let ip2_tok = match self.ip2 {
+                    IpAddr::V4(val) => ip4_tokens(val),
+                    IpAddr::V6(_) => {
+                        emit_error!(self.span2, "Addr is IPv6 but IPv4 is expected");
+                        errored = true;
+                        ip4_tokens(Ipv4Addr::UNSPECIFIED)
+                    }
+                };
+
+                if  !errored && self.ip1 >= self.ip2 {
+                    if let Some(span) = self.range_span() {
+                        emit_warning!(
+                            span,
+                            "This range will yeild no values: IP1 >= IP2";
+                            help="This iterator requires the lower IP value first in it's arguments list."
+
+                        );
+                    }
+                }
+
+                quote! { #ip1_tok, #ip2_tok }
+            }
+
+            fn v6_tokens(&self) -> proc_macro2::TokenStream  {
+                if self.cancel{
+                    let ip1_tok = ip6_tokens(Ipv6Addr::UNSPECIFIED);
+                    let ip2_tok = ip6_tokens(Ipv6Addr::UNSPECIFIED);
+                    return quote! { #ip1_tok, #ip2_tok }
+                }
+                let mut errored: bool = false;
+                let ip1_tok = match self.ip1 {
+                    IpAddr::V6(val) => ip6_tokens(val),
+                    IpAddr::V4(_) => {
+                        emit_error!(self.span1, "Addr is IPv4 but IPv6 is expected");
+                        errored = true;
+                        ip6_tokens(Ipv6Addr::UNSPECIFIED)
+                    }
+                };
+
+                let ip2_tok = match self.ip2 {
+                    IpAddr::V6(val) => ip6_tokens(val),
+                    IpAddr::V4(_) => {
+                        emit_error!(self.span2, "Addr is IPv4 but IPv6 is expected");
+                        errored = true;
+                        ip6_tokens(Ipv6Addr::UNSPECIFIED)
+                    }
+                };
+
+                if !errored && self.ip1 >= self.ip2 {
+                    if let Some(span) = self.range_span() {
+                        emit_warning!(
+                            span,
+                            "This range will yeild no values: IP1 >= IP2";
+                            help="This iterator requires the lower IP value first in it's arguments list."
+                        );
+                    }
+                }
+
+                quote! { #ip1_tok, #ip2_tok }
+            }
+        }
+
+        struct SubnetArgs {
+            range: RangeArgs,
+            min_prefix_len: u8,
+            span: proc_macro2::Span
+        }
+
+        impl syn::parse::Parse for SubnetArgs {
+            fn parse(input: syn::parse::ParseStream) -> syn::parse::Result<Self> {
+                let range = input.parse::<RangeArgs>()?;
+                input.parse::<syn::Token![,]>()?;
+                let min_prefix_len_lit = input.parse::<syn::LitInt>()?;
+                let span = min_prefix_len_lit.span();
+
+                let min_prefix_len = match min_prefix_len_lit.base10_parse::<u8>() {
+                    Ok(v) => v,
+                    Err(e) => {
+                        emit_error!(min_prefix_len_lit, e);
+                        0
+                    }
+                };
+                Ok(Self{range, min_prefix_len, span})
+            }
+        }
+
+        impl SubnetArgs {
+            fn v4_tokens(&self) -> proc_macro2::TokenStream {
+                let inner = self.range.v4_tokens();
+                if self.min_prefix_len > 32 {
+                    emit_error!(self.span, "Minimum prefix must be 32 or less");
+                }
+                let size = self.min_prefix_len;
+                quote! { #inner , #size }
+            }
+
+            fn v6_tokens(&self) -> proc_macro2::TokenStream {
+                let inner = self.range.v6_tokens();
+                if self.min_prefix_len > 128 {
+                    emit_error!(self.span, "Minimum prefix must be 128 or less");
+                }
+                let size = self.min_prefix_len;
+                quote! { #inner , #size }
+            }
+        }
+
+        #[cfg_attr(docsrs, doc(cfg(feature = "ipnet")))]
+        #[doc = "generates [`Ipv4AddrRange`](ipnet::Ipv4AddrRange)"]
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn iprange4(input: TokenStream) -> TokenStream {
+            let args = syn::parse_macro_input!(input as RangeArgs);
+            let inner = args.v4_tokens();
+            quote! { ::ipnet::Ipv4AddrRange::new(#inner) }.into()
+        }
+
+        #[cfg_attr(docsrs, doc(cfg(feature = "ipnet")))]
+        #[doc = "generates [`Ipv6AddrRange`](ipnet::Ipv6AddrRange)"]
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn iprange6(input: TokenStream) -> TokenStream {
+            let args = syn::parse_macro_input!(input as RangeArgs);
+            let inner = args.v6_tokens();
+            quote! { ::ipnet::Ipv6AddrRange::new(#inner) }.into()
+        }
+
+        #[cfg_attr(docsrs, doc(cfg(feature = "ipnet")))]
+        #[doc = "generates [`IpAddrRange`](ipnet::IpAddrRange)"]
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn iprange(input: TokenStream) -> TokenStream {
+            let args = syn::parse_macro_input!(input as RangeArgs);
+            match args.ip1 {
+                IpAddr::V4(_) => {
+                    let inner = args.v4_tokens();
+                    quote! { ::ipnet::IpAddrRange::V4(::ipnet::Ipv4AddrRange::new(#inner)) }.into()
+                }
+                IpAddr::V6(_) => {
+                    let inner = args.v6_tokens();
+                    quote! { ::ipnet::IpAddrRange::V6(::ipnet::Ipv6AddrRange::new(#inner)) }.into()
+                }
+            }
+        }
+
+        #[cfg_attr(docsrs, doc(cfg(feature = "ipnet")))]
+        #[doc = "generates [`Ipv4Subnets`](ipnet::Ipv4Subnets)"]
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn ipsubnets4(input: TokenStream) -> TokenStream {
+            let args = syn::parse_macro_input!(input as SubnetArgs);
+            let inner = args.v4_tokens();
+            quote! { ::ipnet::Ipv4Subnets::new(#inner) }.into()
+        }
+
+        #[cfg_attr(docsrs, doc(cfg(feature = "ipnet")))]
+        #[doc = "generates [`Ipv6Subnets`](ipnet::Ipv6Subnets)"]
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn ipsubnets6(input: TokenStream) -> TokenStream {
+            let args = syn::parse_macro_input!(input as SubnetArgs);
+            let inner = args.v6_tokens();
+            quote! { ::ipnet::Ipv6Subnets::new(#inner) }.into()
+        }
+
+        #[cfg_attr(docsrs, doc(cfg(feature = "ipnet")))]
+        #[doc = "generates [`IpSubnets`](ipnet::IpSubnets)"]
+        #[proc_macro]
+        #[proc_macro_error]
+        pub fn ipsubnets(input: TokenStream) -> TokenStream {
+            let args = syn::parse_macro_input!(input as SubnetArgs);
+            match args.range.ip1 {
+                IpAddr::V4(_) => {
+                    let inner = args.v4_tokens();
+                    quote! { ::ipnet::IpSubnets::V4(::ipnet::Ipv4Subnets::new(#inner)) }.into()
+                }
+                IpAddr::V6(_) => {
+                    let inner = args.v6_tokens();
+                    quote! { ::ipnet::IpSubnets::V6(::ipnet::Ipv6Subnets::new(#inner)) }.into()
+                }
+            }
+        }
+
     }
 }
 
@@ -344,6 +587,7 @@ mod tests {
     }
 
     #[cfg(feature = "ipnet")]
+    #[allow(unexpected_cfgs)]
     #[test]
     fn ipnet_types() {
         let t = trybuild::TestCases::new();
@@ -352,9 +596,44 @@ mod tests {
         t.compile_fail("tests/fail/ipnet4.rs");
         t.compile_fail("tests/fail/ipnet6.rs");
 
+        // The error output between stable and nightly differs
+        // and has an effect on these tests. Therefor there are
+        // two different versions for stable and nightly
+        if cfg!(nightly) {
+            t.compile_fail("tests/fail_nightly/iprange4.rs");
+            t.compile_fail("tests/fail_nightly/iprange6.rs");
+            t.compile_fail("tests/fail_nightly/iprange.rs");
+            t.compile_fail("tests/fail_nightly/ipsubnets4.rs");
+            t.compile_fail("tests/fail_nightly/ipsubnets6.rs");
+            t.compile_fail("tests/fail_nightly/ipsubnets.rs");
+        } else {
+            t.compile_fail("tests/fail/iprange4.rs");
+            t.compile_fail("tests/fail/iprange6.rs");
+            t.compile_fail("tests/fail/iprange.rs");
+            t.compile_fail("tests/fail/ipsubnets4.rs");
+            t.compile_fail("tests/fail/ipsubnets6.rs");
+            t.compile_fail("tests/fail/ipsubnets.rs");
+        }
+
+        // Nightly supports warnings, so test those out
+        if cfg!(nightly) {
+            t.compile_fail("tests/warnings/iprange4.rs");
+            t.compile_fail("tests/warnings/iprange6.rs");
+            t.compile_fail("tests/warnings/iprange.rs");
+            t.compile_fail("tests/warnings/ipsubnets4.rs");
+            t.compile_fail("tests/warnings/ipsubnets6.rs");
+            t.compile_fail("tests/warnings/ipsubnets.rs");
+        }
+
         t.pass("tests/pass/ipnet.rs");
         t.pass("tests/pass/ipnet4.rs");
         t.pass("tests/pass/ipnet6.rs");
+        t.pass("tests/pass/iprange.rs");
+        t.pass("tests/pass/iprange4.rs");
+        t.pass("tests/pass/iprange6.rs");
+        t.pass("tests/pass/ipsubnets.rs");
+        t.pass("tests/pass/ipsubnets4.rs");
+        t.pass("tests/pass/ipsubnets6.rs");
     }
 
     #[cfg(feature = "macaddr")]

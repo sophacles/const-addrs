@@ -1,0 +1,37 @@
+error: invalid IP address syntax
+ --> tests/fail/iprange6.rs:4:42
+  |
+4 |     let _ = iprange6!("2001:db8::32:23", "2001:db8::32::ffff");
+  |                                          ^^^^^^^^^^^^^^^^^^^^
+
+error: invalid IP address syntax
+ --> tests/fail/iprange6.rs:5:23
+  |
+5 |     let _ = iprange6!("2001:db8::32::23", "2001:db8::32:ffff");
+  |                       ^^^^^^^^^^^^^^^^^^
+
+error: macro expansion ignores `compile_error` and any tokens following
+ --> tests/fail/iprange6.rs:6:43
+  |
+6 |     let _ = iprange6!("2001:db8::32::23", "2001:db8::32::ffff");
+  |             ------------------------------^^^^^^^^^^^^^^^^^^^^- caused by the macro expansion here
+  |
+  = note: the usage of `iprange6!` is likely invalid in expression context
+
+error: invalid IP address syntax
+ --> tests/fail/iprange6.rs:6:23
+  |
+6 |     let _ = iprange6!("2001:db8::32::23", "2001:db8::32::ffff");
+  |                       ^^^^^^^^^^^^^^^^^^
+
+error: Addr is IPv4 but IPv6 is expected
+ --> tests/fail/iprange6.rs:7:42
+  |
+7 |     let _ = iprange6!("2001:db8::32:23", "10.0.0.2");
+  |                                          ^^^^^^^^^^
+
+error: Addr is IPv4 but IPv6 is expected
+ --> tests/fail/iprange6.rs:8:23
+  |
+8 |     let _ = iprange6!("10.0.0.1", "2001:db8::32:23");
+  |                       ^^^^^^^^^^
